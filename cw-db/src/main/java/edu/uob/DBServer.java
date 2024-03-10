@@ -30,9 +30,9 @@ public class DBServer {
         }
     }
 
-    /**Create a method to read in the data from the file and print out to terminal.
-     * What data structure should I use to store the data?*/
-
+    /**
+     * Create a method to read in the data from the file and print out to terminal.
+     */
     public void readDataFromFile(String fileName){
         try{
             String fullFileName = this.storageFolderPath + File.separator + fileName;
