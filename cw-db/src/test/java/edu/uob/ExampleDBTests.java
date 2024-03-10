@@ -1,12 +1,12 @@
 package edu.uob;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.time.Duration;
+import java.util.List;
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExampleDBTests {
 
@@ -100,5 +100,37 @@ public class ExampleDBTests {
         assertTrue(response.contains("[ERROR]"), "An attempt was made to access a non-existent table, however an [ERROR] tag was not returned");
         assertFalse(response.contains("[OK]"), "An attempt was made to access a non-existent table, however an [OK] tag was returned");
     }
+
+    // Test creating a table with a single column
+    @Test
+    public void testCreateTable() {
+        String dataBaseName = "db";
+        String tableName = "table";
+        List<String> columnName = List.of("col1", "col2", "col3");
+        server.createTable(dataBaseName, tableName, columnName);
+    }
+    //Test creating a table in an existing database
+    @Test
+    public void testTwoTablesInSameDB() {
+        String dataBaseName = "db";
+        String tableName1 = "table1";
+        String tableName2 = "table2";
+        List<String> columnName = List.of("col1", "col2", "col3");
+        server.createTable(dataBaseName, tableName1, columnName);
+        server.createTable(dataBaseName, tableName2, columnName);
+    }
+    //Test exception when creating a table with the same names
+    @Test
+    public void testTwoSameNameTablesInSameDB() {
+        String dataBaseName = "db";
+        String tableName = "table";
+        List<String> columnName = List.of("col1", "col2", "col3");
+        server.createTable(dataBaseName, tableName, columnName);
+        Exception exception = assertThrows(IOException.class, () -> {
+            server.createTable(dataBaseName, tableName, columnName);
+        });
+        assertEquals("Table already exists", exception.getMessage());
+    }
+
 
 }
