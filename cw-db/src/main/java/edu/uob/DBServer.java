@@ -52,8 +52,7 @@ public class DBServer {
                 return false;
         }
     }
-    /**Create table based on the query from user*/
-    /** How to test for exception? */
+    /**Create table based on the query from user, for reference ONLY
     public void createTable (String dataBaseName, String tableName, List<String> columnName){
         try {
             dataBaseName = dataBaseName.toLowerCase();
@@ -83,23 +82,8 @@ public class DBServer {
         }catch(IOException ioe){
             System.out.println("Error creating table: " + ioe.getMessage());
         }
-    }
-
-   /** public BufferedWriter getBufferedWriter(String dataBaseName, String tableName) throws IOException {
-        File dataBaseFolder = new File(this.storageFolderPath + File.separator + dataBaseName);
-        if(!dataBaseFolder.exists()) {
-            dataBaseFolder.mkdirs();
-        }
-        //Create a file for the table
-        String tablePath = this.storageFolderPath + File.separator + dataBaseName + File.separator + tableName + ".tab";
-
-        //Check if same table name already exists
-        File tableFile = new File(tablePath);
-        if(tableFile.exists()){
-            throw new IOException("Table already exists");
-        }
-        return new BufferedWriter(new FileWriter(tableFile));
     }*/
+
 
 
     /**
