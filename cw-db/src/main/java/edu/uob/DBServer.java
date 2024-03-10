@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.List;
 
 /** This class implements the DB server. */
 public class DBServer {
@@ -14,6 +15,7 @@ public class DBServer {
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
+        //server.readDataFromFile("people.tab");
         server.blockingListenOn(8888);
     }
 
@@ -30,9 +32,7 @@ public class DBServer {
         }
     }
 
-    /**
-     * Create a method to read in the data from the file and print out to terminal.
-     */
+    /**Create a method to read in the data from the file and print out to terminal.*/
     public void readDataFromFile(String fileName){
         try{
             String fullFileName = this.storageFolderPath + File.separator + fileName;
@@ -48,6 +48,32 @@ public class DBServer {
             }
         } catch(IOException ioe){
                 System.out.println("Error reading from file: " + ioe.getMessage());
+        }
+    }
+    /**Create table based on the query from user*/
+    public void createTable (String dataBaseName, String tableName, List<String> columnName){
+        try{
+            dataBaseName = dataBaseName.toLowerCase();
+            tableName = tableName.toLowerCase();
+
+            //Create a folder for the database
+            File dataBaseFolder = new File(this.storageFolderPath + File.separator + dataBaseName);
+            if(!dataBaseFolder.exists()) {
+                dataBaseFolder.mkdirs();
+            }
+            //Create a file for the table
+            String tablePath = this.storageFolderPath + File.separator + dataBaseName + File.separator + tableName + ".tab";
+            FileWriter fileWriter = new FileWriter(tablePath);
+            BufferedWriter buffWriter = new BufferedWriter(fileWriter);
+            //Write the column names to the table
+            for (String column : columnName){
+                buffWriter.write(column + "\t");
+            }
+            buffWriter.newLine();
+            buffWriter.close();
+        } catch(IOException ioe){
+            System.out.println("Error creating table: " + ioe.getMessage());
+
         }
     }
 
