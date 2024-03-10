@@ -1,11 +1,6 @@
 package edu.uob;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
@@ -34,6 +29,28 @@ public class DBServer {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
     }
+
+    /**Create a method to read in the data from the file and print out to terminal.
+     * What data structure should I use to store the data?*/
+
+    public void readDataFromFile(String fileName){
+        try{
+            String fullFileName = this.storageFolderPath + File.separator + fileName;
+            File fileToOpen = new File(fullFileName);
+
+            try (FileReader reader = new FileReader(fileToOpen);
+                BufferedReader buffReader = new BufferedReader(reader)){
+                String line = buffReader.readLine();
+                while (line != null) {
+                    System.out.println(line);
+                    line = buffReader.readLine();
+                }
+            }
+        } catch(IOException ioe){
+                System.out.println("Error reading from file: " + ioe.getMessage());
+        }
+    }
+
 
     /**
     * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
