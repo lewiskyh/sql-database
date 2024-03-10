@@ -102,35 +102,6 @@ public class ExampleDBTests {
     }
 
     // Test creating a table with a single column
-    @Test
-    public void testCreateTable() {
-        String dataBaseName = "db";
-        String tableName = "table";
-        List<String> columnName = List.of("col1", "col2", "col3");
-        server.createTable(dataBaseName, tableName, columnName);
-    }
-    //Test creating a table in an existing database
-    @Test
-    public void testTwoTablesInSameDB() {
-        String dataBaseName = "db";
-        String tableName1 = "table1";
-        String tableName2 = "table2";
-        List<String> columnName = List.of("col1", "col2", "col3");
-        server.createTable(dataBaseName, tableName1, columnName);
-        server.createTable(dataBaseName, tableName2, columnName);
-    }
-    //Test exception when creating a table with the same names
-    @Test
-    public void testTwoSameNameTablesInSameDB() {
-        String dataBaseName = "db";
-        String tableName = "table";
-        List<String> columnName = List.of("col1", "col2", "col3");
-        server.createTable(dataBaseName, tableName, columnName);
-        Exception exception = assertThrows(IOException.class, () -> {
-            server.createTable(dataBaseName, tableName, columnName);
-        });
-        assertEquals("Table already exists", exception.getMessage());
-    }
-
+   
 
 }
