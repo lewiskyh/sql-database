@@ -21,6 +21,8 @@ public class DBTable {
         this.entries = new ArrayList<>();
     }
 
+    public Integer getNumberOfEntries() { return this.numberOfEntries; }
+
     public void setTableName(String tableName) { this.tableName = tableName; }
 
     public String getTableName() { return this.tableName; }
