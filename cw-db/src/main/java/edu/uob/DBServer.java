@@ -32,59 +32,6 @@ public class DBServer {
         }
     }
 
-    /**Create a method to read in the data from the file and print out to terminal.*/
-    public Boolean readDataFromFile(String fileName){
-        try{
-            String fullFileName = this.storageFolderPath + File.separator + fileName;
-            File fileToOpen = new File(fullFileName);
-
-            try (FileReader reader = new FileReader(fileToOpen);
-                BufferedReader buffReader = new BufferedReader(reader)){
-                String line = buffReader.readLine();
-                while (line != null) {
-                    System.out.println(line);
-                    line = buffReader.readLine();
-                }
-                return true;
-            }
-        } catch(IOException ioe){
-                System.out.println("Error reading from file: " + ioe.getMessage());
-                return false;
-        }
-    }
-    /**Create table based on the query from user, for reference ONLY
-    public void createTable (String dataBaseName, String tableName, List<String> columnName){
-        try {
-            dataBaseName = dataBaseName.toLowerCase();
-            tableName = tableName.toLowerCase();
-
-            //Create a folder for the database
-            File dataBaseFolder = new File(this.storageFolderPath + File.separator + dataBaseName);
-            if (!dataBaseFolder.exists()) {
-                dataBaseFolder.mkdirs();
-            }
-            //Create a file for the table
-            String tablePath = this.storageFolderPath + File.separator + dataBaseName + File.separator + tableName + ".tab";
-
-            //Check if same table name already exists
-            File tableFile = new File(tablePath);
-            if (tableFile.exists()) {
-                throw new IOException("Table already exists");
-            }
-            try (BufferedWriter buffWriter = new BufferedWriter(new FileWriter(tableFile))) {
-                //Write the column names to the table
-                for (String name : columnName) {
-                    buffWriter.write(name + "\t");
-                }
-                buffWriter.newLine();
-                buffWriter.flush();
-            }
-        }catch(IOException ioe){
-            System.out.println("Error creating table: " + ioe.getMessage());
-        }
-    }*/
-
-
 
     /**
     * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
