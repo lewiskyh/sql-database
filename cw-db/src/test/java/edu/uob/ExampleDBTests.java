@@ -101,7 +101,6 @@ public class ExampleDBTests {
         assertFalse(response.contains("[OK]"), "An attempt was made to access a non-existent table, however an [OK] tag was returned");
     }
 
-    // Test creating a table with a single column
-   
+
 
 }
