@@ -8,20 +8,17 @@ import java.util.HashMap;
 public class DBTable {
     private String tableName;
 
-    private String databaseName;
-
     private List<String> attributes;
 
     private List<Map<String,String>> entries;
 
     private Integer numberOfEntries;
 
-    public DBTable(String databaseName){
+    public DBTable(){
         this.tableName = "";
         this.numberOfEntries = 0;
         this.attributes = new ArrayList<>();
         this.entries = new ArrayList<>();
-        this.databaseName = databaseName;
     }
 
     public Integer getNumberOfEntries() { return this.numberOfEntries; }
@@ -44,7 +41,9 @@ public class DBTable {
         for(Map<String, String> entry : entries){
             if(entry.get("id").equals(primaryKey)){
                 List<String> result = new ArrayList<>();
-                result.addAll(entry.values());
+                for(String attribute : this.attributes){
+                    result.add(entry.get(attribute));
+                }
                 return result;
             }
         }
@@ -54,6 +53,7 @@ public class DBTable {
     public void addEntry(Map<String, String> entry) {
         this.entries.add(new HashMap<>(entry));
         this.numberOfEntries++;
+        //print the entry
     }
 
     public void deleteEntry (String primaryKey){
@@ -66,7 +66,6 @@ public class DBTable {
         }
     }
 
-    public String getDatabaseName () { return this.databaseName; }
 
 
 }
