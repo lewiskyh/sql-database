@@ -12,7 +12,7 @@ public class DBTableTests {
 
     @BeforeEach
     public void setUp() {
-        table = new DBTable("TestDB");
+        table = new DBTable();
     }
 
     // Test the table name is set correctly
@@ -93,10 +93,5 @@ public class DBTableTests {
         assert(table.getEntry("2").equals(List.of("2", "10", "11")));
         assert(table.getNumberOfEntries() == 1);
     }
-
-
-
-
-
 
 }
