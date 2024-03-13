@@ -23,6 +23,8 @@ public class DBTable {
 
     public Integer getNumberOfEntries() { return this.numberOfEntries; }
 
+    public Integer getNumberOfAttributes() { return this.attributes.size(); }
+
     public void setTableName(String tableName) { this.tableName = tableName; }
 
     public String getTableName() { return this.tableName; }
@@ -37,7 +39,7 @@ public class DBTable {
     }
     public List<String> getAttributes() { return this.attributes; }
 
-    public List <String> getEntry (String primaryKey){
+    public List <String> getEntryByKey (String primaryKey){
         for(Map<String, String> entry : entries){
             if(entry.get("id").equals(primaryKey)){
                 List<String> result = new ArrayList<>();
@@ -49,6 +51,8 @@ public class DBTable {
         }
         return null;
     }
+
+    public List<Map<String, String>> getAllEntries() { return new ArrayList<>(this.entries); }
 
     public void addEntry(Map<String, String> entry) {
         this.entries.add(new HashMap<>(entry));

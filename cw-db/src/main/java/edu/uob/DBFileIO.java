@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 public class DBFileIO {
 
@@ -48,7 +49,7 @@ public class DBFileIO {
 
         } catch (IOException ioe){ System.out.println("Error reading from file: " + ioe.getMessage()); }
 
-        readFirstLineFromTable(lines.get(0));
+        readFirstLine(lines.get(0));
         if(lines.size() > 1) {
             //Only pass the second row onwards to readEntries
             ArrayList<String> entries = new ArrayList<>(lines.subList(1, lines.size()));
@@ -57,7 +58,7 @@ public class DBFileIO {
         }
     }
 
-    public void readFirstLineFromTable (String firstLine){
+    public void readFirstLine (String firstLine){
         String[] attributes = firstLine.split("\\t");
         for (String attribute : attributes){
             dbTable.addAttribute(attribute);
@@ -79,6 +80,48 @@ public class DBFileIO {
             }
             dbTable.addEntry(entryMap);
         }
+    }
+
+    public void writeTable() throws IOException{
+        File writeFile = new File(this.tableFilePath);
+
+        writeFile.createNewFile();
+        //Check if writeFile exists after creating it
+        if (!writeFile.exists()){
+            throw new IOException("Table File does not exist at " + this.tableFilePath);
+        }
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(writeFile));
+        writeFirstLine(bufferedWriter);
+        writeEntries(bufferedWriter);
+        bufferedWriter.close();
+
+    }
+
+    public void writeFirstLine (BufferedWriter bufferedWriter) throws IOException{
+        for (String attribute : this.dbTable.getAttributes()){
+            bufferedWriter.write(attribute + "\t");
+        }
+        //Move to next line
+        bufferedWriter.newLine();
+        bufferedWriter.flush();
+    }
+
+    public void writeEntries (BufferedWriter bufferedWriter) throws IOException{
+        List<Map<String, String>> allEntries = this.dbTable.getAllEntries();
+        List<String> attributes = this.dbTable.getAttributes();
+
+        //Write each entry
+        for (Map<String, String> entry : allEntries){
+            //For each entry, iterate through the attributes and write the data
+            for (int i =0; i< attributes.size(); i++){
+                String data = entry.get(attributes.get(i));
+                if(data == null){ data = ""; }
+                bufferedWriter.write(data + "\t");
+            }
+            //Move to next line
+            bufferedWriter.newLine();
+        }
+        bufferedWriter.flush();
     }
 
 
