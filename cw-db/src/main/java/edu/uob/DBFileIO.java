@@ -36,21 +36,23 @@ public class DBFileIO {
         if (!readFile.exists()) { throw new IOException("Table File does not exist at " + this.tableFilePath); }
 
         ArrayList<String> lines = new ArrayList<>();
-
-        try(BufferedReader bufferedReader= new BufferedReader(new FileReader(readFile))){
+        BufferedReader bufferedReader= new BufferedReader(new FileReader(readFile));
+        try{
             String line = bufferedReader.readLine();
-            while (line != null) {
+            while (line != null && !line.trim().isEmpty()) {
                 lines.add(line);
                 line = bufferedReader.readLine();
             }
-            //print lines
+
+            bufferedReader.close();
 
         } catch (IOException ioe){ System.out.println("Error reading from file: " + ioe.getMessage()); }
 
         readFirstLineFromTable(lines.get(0));
         if(lines.size() > 1) {
             //Only pass the second row onwards to readEntries
-            readEntries(new ArrayList<>(lines.subList(1, lines.size())));
+            ArrayList<String> entries = new ArrayList<>(lines.subList(1, lines.size()));
+            readEntries(entries);
 
         }
     }
@@ -63,22 +65,22 @@ public class DBFileIO {
     }
 
 
-    public void readEntries (ArrayList<String> entryLines){
+    public void readEntries (ArrayList<String> entryLines) {
 
         //Extract each entry
-        for (String line : entryLines){
+        for (String line : entryLines) {
             String[] entry = line.split("\\t");
-            Map<String,String> entryMap = new HashMap<>();
 
-            for (int i =0; i< dbTable.getAttributes().size() ; i++ ){
+            Map<String, String> entryMap = new HashMap<>();
+
+            for (int i = 0; i < dbTable.getAttributes().size(); i++) {
                 String entryValue = i < entry.length ? entry[i] : "";
                 entryMap.put(dbTable.getAttributes().get(i), entryValue);
             }
             dbTable.addEntry(entryMap);
         }
-        System.out.println("Entries read from file: " + dbTable.getNumberOfEntries());
-
     }
+
 
 
 
