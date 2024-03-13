@@ -65,7 +65,7 @@ public class DBFileIOTests{
         lines.add("1\t2\t3");
         lines.add("4\t5\t6");
         assertEquals(3, lines.size());
-        fileIO.readFirstLineFromTable(lines.get(0));
+        fileIO.readFirstLine(lines.get(0));
         //Assert first attribute is A, last attribute is C, second attribute is B
         assertEquals("A", fileIO.getDBTable().getAttributes().get(0));
         assertEquals("B", fileIO.getDBTable().getAttributes().get(1));
@@ -96,6 +96,25 @@ public class DBFileIOTests{
         this.fileIO.readFromTable();
         assertEquals(3, this.fileIO.getDBTable().getNumberOfEntries());
     }
+
+    //Test writeToTable
+    @Test
+    public void testWriteToTable() throws IOException {
+        DBTable testTable = new DBTable("testTable");
+        this.filePath.setDatabaseFolderPath("lewis");
+        this.fileIO = new DBFileIO(this.filePath, testTable);
+        testTable.addAttribute("id"); testTable.addAttribute("value"); testTable.addAttribute("value2");
+        testTable.addEntry(Map.of("id", "1", "value", "100", "value2", "20"));
+        testTable.addEntry(Map.of("id", "2", "value", "30", "value2", "40"));
+        testTable.addEntry(Map.of("id", "3", "value", "50", "value2", "60"));
+        this.fileIO.writeToTable();
+        assertEquals(3, this.fileIO.getDBTable().getNumberOfEntries());
+        assertEquals("1", this.fileIO.getDBTable().getEntryByKey("1").get(0));
+        assertEquals("60", this.fileIO.getDBTable().getEntryByKey("3").get(2));
+    }
+
+
+
 
 
 }

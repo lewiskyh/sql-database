@@ -16,17 +16,25 @@ public class DBFileIO {
 
     private String tableFilePath;
 
+    private DBFilePath filePath;
+
     public DBFileIO (DBFilePath filePath, DBTable table){
 
         this.dbTable = table;
+        this.filePath = filePath;
         this.tableFilePath = filePath.getDatabaseFolderPath() + File.separator + table.getTableName() + ".tab";
     }
 
 
     public DBTable getDBTable() { return this.dbTable; }
-    public void setDBTable(DBTable table) { this.dbTable = table; }
+    public void setDBTable(DBTable table) {
+        this.dbTable = table;
+        this.tableFilePath = this.filePath.getDatabaseFolderPath() + File.separator + table.getTableName() + ".tab";
+
+    }
 
     public String getTableFilePath() { return this.tableFilePath; }
+
 
 
     public void readFromTable () throws IOException {
@@ -82,7 +90,7 @@ public class DBFileIO {
         }
     }
 
-    public void writeTable() throws IOException{
+    public void writeToTable() throws IOException{
         File writeFile = new File(this.tableFilePath);
 
         writeFile.createNewFile();
@@ -94,7 +102,6 @@ public class DBFileIO {
         writeFirstLine(bufferedWriter);
         writeEntries(bufferedWriter);
         bufferedWriter.close();
-
     }
 
     public void writeFirstLine (BufferedWriter bufferedWriter) throws IOException{

@@ -21,6 +21,14 @@ public class DBTable {
         this.entries = new ArrayList<>();
     }
 
+    //Constructor with table name
+    public DBTable(String tableName){
+        this.tableName = tableName;
+        this.numberOfEntries = 0;
+        this.attributes = new ArrayList<>();
+        this.entries = new ArrayList<>();
+    }
+
     public Integer getNumberOfEntries() { return this.numberOfEntries; }
 
     public Integer getNumberOfAttributes() { return this.attributes.size(); }

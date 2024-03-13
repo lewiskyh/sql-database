@@ -61,7 +61,7 @@ public class DBTableTests {
         table.addAttribute("testAttribute2");
         table.addAttribute("testAttribute3");
         table.addEntry((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
-        assert(table.getEntry("1").equals(List.of("1", "2", "3")));
+        assert(table.getEntryByKey("1").equals(List.of("1", "2", "3")));
     }
 
     //Test adding 2 entries and getting the number of entries
@@ -72,7 +72,7 @@ public class DBTableTests {
         table.addAttribute("testAttribute3");
         table.addEntry((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
         table.addEntry((Map.of("id", "2", "testAttribute2", "10", "testAttribute3", "11")));
-        assert(table.getEntry("2").equals(List.of("2", "10", "11")));
+        assert(table.getEntryByKey("2").equals(List.of("2", "10", "11")));
         assert(table.getNumberOfEntries() == 2);
     }
 
@@ -88,9 +88,9 @@ public class DBTableTests {
         assert(table.getNumberOfEntries() == 3);
         table.deleteEntry("1");
         table.deleteEntry("3");
-        assert(table.getEntry("1") == null);
-        assert(table.getEntry("3") == null);
-        assert(table.getEntry("2").equals(List.of("2", "10", "11")));
+        assert(table.getEntryByKey("1") == null);
+        assert(table.getEntryByKey("3") == null);
+        assert(table.getEntryByKey("2").equals(List.of("2", "10", "11")));
         assert(table.getNumberOfEntries() == 1);
     }
 
