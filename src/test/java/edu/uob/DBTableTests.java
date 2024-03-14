@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.List;
 
@@ -116,19 +117,48 @@ public class DBTableTests {
 
     @Test
     public void testReadFromTable(){
-        //print database filepath
-        System.out.println(database.getDatabaseFolderPath());
-        //print people filepath
-        System.out.println(table.getTableFilePath());
-        // set table to people table
         table.setTable("people");
-        System.out.println(table.getTableFilePath());
         try {
             table.readFromTable();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        assertEquals(3, table.getNumberOfEntries());
+        assertEquals(4, table.getNumberOfAttributes());
+        //Assert getEnrtyByKey get the expected result
+        assert(table.getEntryByKey("1").equals(List.of("1", "Bob", "21", "bob@bob.net")));
+        //Assert element of attributes
+        assert(table.getAttributes().equals(List.of("id", "Name", "Age", "Email")));
 
     }
+
+    //Test writetable method
+
+    @Test
+    public void testWriteTable() throws IOException {
+        //In lewis database
+        table.setTable("testTable");
+        table.addAttribute("id");
+        table.addAttribute("Age");
+        table.addAttribute("Sex");
+        table.addEntry((Map.of("id", "1", "Age", "21", "Sex", "M")));
+        table.addEntry((Map.of("id", "2", "Age", "22", "Sex", "F")));
+        table.writeTable();
+        assertEquals(2, table.getNumberOfEntries());
+        assertEquals(3, table.getNumberOfAttributes());
+        //Assert getEnrtyByKey get the expected result
+        assert(table.getEntryByKey("1").equals(List.of("1", "21", "M")));
+        //Assert element of attributes
+        assert(table.getAttributes().equals(List.of("id","Age","Sex")));
+        //Delete row1
+        table.deleteEntry("1");
+        table.writeTable();
+        assertEquals(1, table.getNumberOfEntries());
+        assertEquals(3, table.getNumberOfAttributes());
+        assert(table.getEntryByKey("1") == null);
+        assert(table.getEntryByKey("2").equals(List.of("2", "22", "F")));
+    }
+
+
 
 }
