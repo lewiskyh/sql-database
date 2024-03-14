@@ -86,7 +86,7 @@ public class DBFileIO {
                 String entryValue = i < entry.length ? entry[i] : "";
                 entryMap.put(dbTable.getAttributes().get(i), entryValue);
             }
-            dbTable.addEntry(entryMap);
+            dbTable.addRow(entryMap);
         }
     }
 
@@ -114,7 +114,7 @@ public class DBFileIO {
     }
 
     public void writeEntries (BufferedWriter bufferedWriter) throws IOException{
-        List<Map<String, String>> allEntries = this.dbTable.getAllEntries();
+        List<Map<String, String>> allEntries = this.dbTable.getAllRows();
         List<String> attributes = this.dbTable.getAttributes();
 
         //Write each entry

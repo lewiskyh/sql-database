@@ -60,8 +60,8 @@ public class DBTableTests {
         table.addAttribute("id");
         table.addAttribute("testAttribute2");
         table.addAttribute("testAttribute3");
-        table.addEntry((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
-        assert(table.getEntryByKey("1").equals(List.of("1", "2", "3")));
+        table.addRow((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
+        assert(table.getRowByKey("1").equals(List.of("1", "2", "3")));
     }
 
     //Test adding 2 entries and getting the number of entries
@@ -70,28 +70,28 @@ public class DBTableTests {
         table.addAttribute("id");
         table.addAttribute("testAttribute2");
         table.addAttribute("testAttribute3");
-        table.addEntry((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
-        table.addEntry((Map.of("id", "2", "testAttribute2", "10", "testAttribute3", "11")));
-        assert(table.getEntryByKey("2").equals(List.of("2", "10", "11")));
-        assert(table.getNumberOfEntries() == 2);
+        table.addRow((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
+        table.addRow((Map.of("id", "2", "testAttribute2", "10", "testAttribute3", "11")));
+        assert(table.getRowByKey("2").equals(List.of("2", "10", "11")));
+        assert(table.getNumberOfRows() == 2);
     }
 
-    //Test deleting 2 enties and getting the new number of entries
+    //Test deleting 2 entries and getting the new number of entries
     @Test
     public void testDeleteEntry(){
         table.addAttribute("id");
         table.addAttribute("testAttribute2");
         table.addAttribute("testAttribute3");
-        table.addEntry((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
-        table.addEntry((Map.of("id", "2", "testAttribute2", "10", "testAttribute3", "11")));
-        table.addEntry((Map.of("id", "3", "testAttribute2", "20", "testAttribute3", "21")));
-        assert(table.getNumberOfEntries() == 3);
-        table.deleteEntry("1");
-        table.deleteEntry("3");
-        assert(table.getEntryByKey("1") == null);
-        assert(table.getEntryByKey("3") == null);
-        assert(table.getEntryByKey("2").equals(List.of("2", "10", "11")));
-        assert(table.getNumberOfEntries() == 1);
+        table.addRow((Map.of("id", "1", "testAttribute2", "2", "testAttribute3", "3")));
+        table.addRow((Map.of("id", "2", "testAttribute2", "10", "testAttribute3", "11")));
+        table.addRow((Map.of("id", "3", "testAttribute2", "20", "testAttribute3", "21")));
+        assert(table.getNumberOfRows() == 3);
+        table.deleteRow("1");
+        table.deleteRow("3");
+        assert(table.getRowByKey("1") == null);
+        assert(table.getRowByKey("3") == null);
+        assert(table.getRowByKey("2").equals(List.of("2", "10", "11")));
+        assert(table.getNumberOfRows() == 1);
     }
 
 }
