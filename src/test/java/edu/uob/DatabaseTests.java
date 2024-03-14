@@ -5,19 +5,21 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DatabaseTests {
     private Database database;
-
-
     private DBTable table;
 
-    private DBFileIO fileIO;
+
 
     @BeforeEach
     public void setUp() {
+        this.database = new Database("lewis");
+        this.table = new DBTable(this.database.getDatabaseFolderPath());
 
     }
     //Test getDatabaseName
@@ -33,40 +35,49 @@ public class DatabaseTests {
         assertEquals("newName", database.getDatabaseName());
     }
 
-    //Test addDBTable - by adding 2 tables
     @Test
+    //Test addDBTable - by adding 2 tables
     public void testAddDBTable() throws IOException {
 
          //Create a table class
-         DBTable table1 = new DBTable("table1");
-         this.fileIO.setDBTable(table1);
+         DBTable table1 = new DBTable(this.database.getDatabaseFolderPath(), "table1");
          this.database.addDBTable(table1);
-         DBTable table2 = new DBTable("table2");
-         this.fileIO.setDBTable(table2);
+         DBTable table2 = new DBTable(this.database.getDatabaseFolderPath(), "table2");
          this.database.addDBTable(table2);
          //Assert table1 and 2 are included in the mapsOfTables
         assertEquals(table1, this.database.getDBTable("table1"));
         assertEquals(table2, this.database.getDBTable("table2"));
-
     }
 
+    @Test
     //Test setupDatabase
-    /*public void testSetupDatabase() throws IOException {
+    public void testSetupDatabase() throws IOException {
         //Write a table to the lewis database
-        DBTable newTable = new DBTable("newTable");
+        DBTable newTable = new DBTable(this.database.getDatabaseFolderPath(), "newTable");
         //Write attributes
         newTable.addAttribute("id");
         newTable.addAttribute("name");
+        //add entries to the table
+        Map<String,String> entry1 = new HashMap<>();
+        entry1.put("id", "1");
+        entry1.put("name", "Lewis");
+        Map<String,String> entry2 = new HashMap<>();
+        entry2.put("id", "2");
+        entry2.put("name", "Jaime");
+        newTable.addEntry(entry1);
+        newTable.addEntry(entry2);
+        //Write a table file
+        newTable.writeTable();
         //Add table to lewis database
         //Check if all .tab files in lewis folder can be loaded to lewis database
-        this.database.setupDatabase("lewis");
-        this.database.addDBTable(newTable);
-        //Assert that the two tables have the correct number of attributes
-        assertEquals(4, this.database.getDBTable("people").getNumberOfAttributes());
-        assertEquals(4, this.database.getDBTable("sheds").getNumberOfAttributes());
-        assertEquals(2, this.database.getDBTable("newTable").getNumberOfAttributes());
+        this.database.setupDatabase();
+        //Assert that the newTable is included in the mapsOfTables
+        assertEquals("newTable",this.database.getDBTable("newTable").getTableName());
+        //Assert Existing tables (people and sheds) are included in the mapsOfTables
+        assertEquals("people",this.database.getDBTable("people").getTableName());
+        assertEquals("sheds",this.database.getDBTable("sheds").getTableName());
 
-    }*/
+    }
 
 
 
