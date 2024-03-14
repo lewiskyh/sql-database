@@ -39,20 +39,21 @@ public class Database {
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
+        setDatabaseFolderPath();
     }
 
     public DBTable getDBTable(String tableName) {
         return this.mapsOfTables.get(tableName);
     }
 
-    public void addDBTable(DBTable table) throws IOException {
-        DBTable newTable = new DBTable(table.getTableName());
+    public void addDBTable(DBTable table) {
         this.mapsOfTables.put(table.getTableName(), table);
     }
 
     public void setupDatabase() throws IOException {
         File dbDirectory = new File(getDatabaseFolderPath());
 
+        //Assume database folder exists and contains table files
         if (!dbDirectory.exists()) {
             throw new IOException("Cannot create DB folder");
         }
