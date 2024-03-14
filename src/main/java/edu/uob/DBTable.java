@@ -21,9 +21,9 @@ public class DBTable {
 
     public DBTable(String databaseFolderPath){
         this.tableName = "";
-        this.numberOfEntries = 0;
         this.attributes = new ArrayList<>();
         this.entries = new ArrayList<>();
+        this.numberOfEntries = 0;
         this.databaseFolderPath = databaseFolderPath;
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
     }
@@ -38,7 +38,7 @@ public class DBTable {
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
     }
 
-    public Integer getNumberOfEntries() { return this.numberOfEntries; }
+    public Integer getNumberOfEntries() { return this.entries.size();}
 
     public Integer getNumberOfAttributes() { return this.attributes.size(); }
 
@@ -111,7 +111,7 @@ public class DBTable {
                 }
             }
             this.entries.clear();
-            while((line = bufferedReader.readLine()) != null){
+            while((line = bufferedReader.readLine()) != null && !line.trim().isEmpty()){
                 processRows(line);
             }
         } catch (IOException ioe) {
@@ -126,8 +126,9 @@ public class DBTable {
             String data = i < row.length ? row[i] : "";
             rowMap.put(this.attributes.get(i), data);
         }
+        addEntry(rowMap);
     }
-    public void writeToTable() throws IOException {
+    public void writeTable() throws IOException {
         File writeFile = new File(this.tableFilePath);
         writeFile.createNewFile();
         if (!writeFile.exists()) {
