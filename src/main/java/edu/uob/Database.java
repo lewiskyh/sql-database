@@ -55,7 +55,7 @@ public class Database {
 
         //Assume database folder exists and contains table files
         if (!dbDirectory.exists()) {
-            throw new IOException("Cannot create DB folder");
+            throw new IOException("Database folder does not exist");
         }
 
         File[] listOfTableFiles = dbDirectory.listFiles();

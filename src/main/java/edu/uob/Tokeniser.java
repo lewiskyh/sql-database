@@ -1,12 +1,13 @@
 package edu.uob;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Tokeniser {
 
     private String query;
 
-    private Integer tokenIndex;
+    private Integer currentTokenIndex;
 
     private ArrayList<String> tokens;
 
@@ -15,7 +16,7 @@ public class Tokeniser {
     public Tokeniser(String query) {
         this.query = query;
         //The index 0 is always the command keyword
-        this.tokenIndex = 0;
+        this.currentTokenIndex = 0;
         this.tokens = new ArrayList<>();
     }
 
@@ -23,11 +24,23 @@ public class Tokeniser {
         return tokens.get(index);
     }
 
-    public void incrementTokenIndex() { this.tokenIndex++; }
+    public String getQuery () {
+        return this.query;
+    }
+
+    public ArrayList<String> getAllTokens() {
+        return tokens;
+    }
+
+    public Integer getTokenSize(){return tokens.size();}
+
+    public void incrementTokenIndex() { this.currentTokenIndex++; }
+
+    public void setCurrentTokenIndex(Integer index) { this.currentTokenIndex = index; }
 
     //code from Simon
-    public void preprocessQuery(String query) {
-        query = query.trim();
+    public void preprocessQuery() {
+        String query = this.query.trim();
         // Split the query into fragments on singlespace
         String[] fragments = query.split("\\s+");
         for (int i = 0; i < fragments.length; i++) {

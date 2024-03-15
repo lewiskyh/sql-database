@@ -18,7 +18,7 @@ public class TokeniserTest {
 
     @Test
     public void testGetTokenAtCurrentIndex() {
-        tokeniser.preprocessQuery("SELECT * FROM table12;");
+        tokeniser.preprocessQuery();
         assertEquals("SELECT", tokeniser.getTokenByIndex(0));
         tokeniser.incrementTokenIndex();
         assertEquals("*", tokeniser.getTokenByIndex(1));
@@ -32,7 +32,8 @@ public class TokeniserTest {
 
     @Test
     public void testPreprocessQuery() {
-        tokeniser.preprocessQuery("SELECT *        FROM         table12              WHERE id = 1;");
+        this.tokeniser = new Tokeniser("SELECT *        FROM         table12              WHERE id = 1;");
+        tokeniser.preprocessQuery();
         assertEquals("SELECT", tokeniser.getTokenByIndex(0));
         assertEquals("*", tokeniser.getTokenByIndex(1));
         assertEquals("FROM", tokeniser.getTokenByIndex(2));
@@ -45,7 +46,8 @@ public class TokeniserTest {
 
     @Test
     public void testPreprocessQueryComplex() {
-        tokeniser.preprocessQuery("SELECT name, age FROM students WHERE age >= 18;");
+        this.tokeniser = new Tokeniser("SELECT name, age FROM students WHERE age >= 18;");
+        this.tokeniser.preprocessQuery();
         assertEquals("SELECT", tokeniser.getTokenByIndex(0));
         assertEquals("name", tokeniser.getTokenByIndex(1));
         assertEquals(",", tokeniser.getTokenByIndex(2));
@@ -60,7 +62,8 @@ public class TokeniserTest {
 
     @Test
     public void testPreprocessQueryComplex2() {
-        tokeniser.preprocessQuery("INSERT INTO orders (id, item_name, quantity, price, shipped??) VALUES (999, 'iphone', 2, 99.99, FALSE);");
+        this.tokeniser = new Tokeniser("INSERT INTO orders (id, item_name, quantity, price, shipped??) VALUES (999, 'iphone', 2, 99.99, FALSE);");
+        this.tokeniser.preprocessQuery();
         assertEquals("INSERT", tokeniser.getTokenByIndex(0));
         assertEquals("INTO", tokeniser.getTokenByIndex(1));
         assertEquals("orders", tokeniser.getTokenByIndex(2));

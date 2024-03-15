@@ -130,9 +130,9 @@ public class DBTable {
     }
     public void writeTable() throws IOException {
         File writeFile = new File(this.tableFilePath);
-        writeFile.createNewFile();
+
         if (!writeFile.exists()) {
-            throw new IOException("Table File does not exist at " + this.tableFilePath);
+            writeFile.createNewFile();
         }
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(writeFile))) {
             writeFirstLine(bufferedWriter);

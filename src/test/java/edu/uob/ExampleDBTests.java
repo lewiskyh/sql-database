@@ -12,6 +12,7 @@ public class ExampleDBTests {
 
     private DBServer server;
 
+
     // Create a new server _before_ every @Test
     @BeforeEach
     public void setup() {
