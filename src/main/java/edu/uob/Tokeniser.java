@@ -25,7 +25,7 @@ public class Tokeniser {
 
     public void incrementTokenIndex() { this.tokenIndex++; }
 
-    //credit to Simon
+    //code from Simon
     public void preprocessQuery(String query) {
         query = query.trim();
         // Split the query into fragments on singlespace

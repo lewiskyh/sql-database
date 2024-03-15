@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Database {
     private String databaseName;
-    private final String rootFolderPath = Paths.get("databases").toAbsolutePath().toString();
+    private final String rootFolderPath = Paths.get("databases").toString();
     private String databaseFolderPath;
     private HashMap<String, DBTable> mapsOfTables;
 
