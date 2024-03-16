@@ -144,7 +144,6 @@ public class ParserTests {
         this.parser.setDatabase(newDatabase);
         this.parser.getTokeniser().preprocessQuery();
         this.parser.parseCommand();
-        this.parser.parseCreateTable();
         //Assert command object has the correct working structure
         assertEquals("TABLE", this.parser.getCommand().getWorkingStructure());
         assertEquals(newDatabase, this.parser.getCommand().getWorkingDatabase());
@@ -160,9 +159,9 @@ public class ParserTests {
         //Database is set when parsing Create command, which is not run in this test, here is set manually
         this.parser.setDatabase(newDatabase);
         this.parser.getTokeniser().preprocessQuery();
-        this.parser.parseCommand();
+
         DatabaseException exception = assertThrows(DatabaseException.class, () -> {
-            this.parser.parseCreateTable();
+            this.parser.parseCommand();
         });
         assertEquals("Missing comma between attributes", exception.getMessage());
     }
@@ -176,10 +175,51 @@ public class ParserTests {
         this.parser.setDatabase(newDatabase);
         this.parser.getTokeniser().preprocessQuery();
         this.parser.parseCommand();
-        this.parser.parseCreateTable();
         assertEquals("TABLE", this.parser.getCommand().getWorkingStructure());
         assertEquals(newDatabase, this.parser.getCommand().getWorkingDatabase());
         assertEquals(List.of("name"), this.parser.getCommand().getAttributeList());
+    }
+
+    //Test parseDrop - database with valid syntax
+    @Test
+    public void testParseDropValid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Drop database newDatabase;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        this.parser.parseCommand();
+        //Assert command's working structure and database name
+        assertEquals("DATABASE", this.parser.getCommand().getWorkingStructure());
+        assertEquals("newDatabase", this.parser.getCommand().getDatabaseName());
+        assertEquals(newDatabase, this.parser.getCommand().getWorkingDatabase());
+    }
+
+    //Tset parseDrop - table with valid syntax
+    @Test
+    public void testParseDropTableValid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Drop table table;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        this.parser.parseCommand();
+        //Assert command's working structure and database name
+        assertEquals("TABLE", this.parser.getCommand().getWorkingStructure());
+        assertEquals(newDatabase, this.parser.getCommand().getWorkingDatabase());
+        //Assert "table" is in command's table name list
+        assertEquals(List.of("table"), this.parser.getCommand().getTableNameList());
+    }
+
+    //Test parseDrop - table with invalid syntax
+    @Test
+    public void testParseDropTableInvalid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Drop tab1e table;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+        assertEquals("Invalid Drop Syntax - DATABASE or TABLE after DROP expected", exception.getMessage());
     }
 
 }

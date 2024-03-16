@@ -15,7 +15,9 @@ public class Command {
     protected String databaseFolderPath;
     protected String workingStructure;
 
-    protected List<String> attributeList = new ArrayList<>();
+    protected List<String> attributeNameList = new ArrayList<>();
+
+    protected List<String> tableNameList = new ArrayList<>();
 
     public Command(){
         this.rootFolderPath = Paths.get("databases").toString();
@@ -56,12 +58,16 @@ public class Command {
     public void addAttributeList(ArrayList<String> attributeList){
         for(String attribute : attributeList){
             if (!attribute.equals(",")){
-                this.attributeList.add(attribute);
+                this.attributeNameList.add(attribute);
             }
         }
     }
 
-    public List<String> getAttributeList(){ return this.attributeList; }
+    public void addTableName(String tableName){ this.tableNameList.add(tableName); }
+
+    public List<String> getTableNameList(){ return this.tableNameList; }
+
+    public List<String> getAttributeList(){ return this.attributeNameList; }
 
 
     public void executeCommand(){

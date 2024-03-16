@@ -1,9 +1,6 @@
 package edu.uob;
 
-import edu.uob.Commands.Command;
-import edu.uob.Commands.CreateCommand;
-import edu.uob.Commands.SelectCommand;
-import edu.uob.Commands.UseCommand;
+import edu.uob.Commands.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,8 +70,9 @@ public class Parser {
                 break;
             }
             case "DROP":{
-
-                //parseDrop();
+                this.command = new DropCommand();
+                parseDrop();
+                break;
 
             }
             case "ALTER":{
@@ -143,14 +141,8 @@ public class Parser {
         }
 
         else if(token.toUpperCase().equals("TABLE")){
-            //Create a new table
-            this.table = new DBTable(this.database.getDatabaseFolderPath());
-            //Set the table name
-            this.table.setTable(token);
-            //Create the table file
-            //this.table.createTable();
-            //Add the table to the database
-            this.database.addDBTable(this.table);
+            //Check if next token conforms with [TableName]
+            parseCreateTable();
         }
         else{
             throw new DatabaseException("Invalid Syntax: either DATABASE or TABLE expected");
@@ -191,7 +183,7 @@ public class Parser {
         if(checkName(token)){
             //Check if the next token is ";" - no attribute list
             if(this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
-                if (this.database != null) {
+                if (!this.database.getDatabaseName().isEmpty()) {
                     this.command.setWorkingDatabase(this.database);
                     this.command.setWorkingStructure("TABLE");
                 }
@@ -205,12 +197,12 @@ public class Parser {
                     attributeListTokens.add(tokeniser.getTokenByIndex(i));
                 }
                 parseAttributeList(attributeListTokens);
-                if(this.database!=null){
+                if(!this.database.getDatabaseName().isEmpty()){
                     this.command.setWorkingDatabase(this.database);
                     this.command.setWorkingStructure("TABLE");
                     this.command.addAttributeList(attributeListTokens);
                 }
-                else { throw new DatabaseException("Didn't not choose database to create table"); }
+                else { throw new DatabaseException("No database selected"); }
 
             }
             else { throw new DatabaseException("Invalid CreateTable Syntax"); }
@@ -281,6 +273,86 @@ public class Parser {
 
         }
     }
+
+    public void parseDrop() throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(this.database.getDatabaseName().isEmpty()){
+            throw new DatabaseException("No database selected");
+        }
+        switch (token.toUpperCase()){
+            case "DATABASE":{
+                parseDropDatabase();
+                break;
+            }
+            case "TABLE":{
+                parseDropTable();
+                break;
+            }
+            default: throw new DatabaseException("Invalid Drop Syntax - DATABASE or TABLE after DROP expected");
+        }
+    }
+
+    public void parseDropDatabase() throws DatabaseException {
+        int currentTokenIndex = 2;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(checkName(token) && this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
+            this.command.setWorkingStructure("DATABASE");
+            this.command.setDatabaseName(token);
+            this.command.setWorkingDatabase(this.database);
+        }
+        else {
+            throw new DatabaseException("Invalid Drop Database Syntax - [DatabaseName] expected OR missing ;");
+        }
+    }
+
+    public void parseDropTable() throws DatabaseException {
+        int currentTokenIndex = 2;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(checkName(token) && this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
+            this.command.setWorkingStructure("TABLE");
+            this.command.setWorkingDatabase(this.database);
+            //print
+            System.out.print (token);
+            this.command.addTableName(token);
+        }
+        else {
+            throw new DatabaseException("Invalid Drop Database Syntax - [TableName] expected OR missing ;");
+        }
+    }
+
+    public void parseAlter() throws DatabaseException{
+        int currentTokenIndex = 1;
+        if(tokeniser.getTokenSize()!=6){ throw new DatabaseException("Invalid Alter Syntax - at least 6 tokens expected"); }
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(this.database.getDatabaseName().isEmpty()){ throw new DatabaseException("No database selected"); }
+        if(!token.toUpperCase().equals("TABLE")){
+             throw new DatabaseException("Invalid Alter Syntax - \"TABLE\"expected after ALTER");
+        }
+        if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+1))){
+             throw new DatabaseException("Invalid Alter Syntax - [TableName] expected after \"TABLE\"");
+        }
+        switch (tokeniser.getTokenByIndex(currentTokenIndex+2).toUpperCase()){
+            case "ADD":{
+                if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+3))){
+                    throw new DatabaseException("Invalid Alter Syntax - [AttributeName] expected after ADD");
+                }
+                this.command.setWorkingStructure("TABLE");
+                this.command.setWorkingDatabase(this.database);
+
+            }
+            case "DROP":{
+                if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+3))){
+                    throw new DatabaseException("Invalid Alter Syntax - [AttributeName] expected after DROP");
+                }
+            }
+            default: throw new DatabaseException("Invalid Alter Syntax - ADD or DROP expected after [TableName]");
+        }
+
+    }
+
+
+
 
 
 }
