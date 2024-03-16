@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Parser {
 
@@ -76,7 +78,9 @@ public class Parser {
 
             }
             case "ALTER":{
-                //parseAlter();
+                this.command = new AlterCommand();
+                parseAlter();
+                break;
 
             }
             case "INSERT":{
@@ -339,17 +343,58 @@ public class Parser {
                 }
                 this.command.setWorkingStructure("TABLE");
                 this.command.setWorkingDatabase(this.database);
+                //How to execute add attrbute? Need to pass target table to command too?
+                break;
 
             }
             case "DROP":{
                 if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+3))){
                     throw new DatabaseException("Invalid Alter Syntax - [AttributeName] expected after DROP");
                 }
+                this.command.setWorkingStructure("TABLE");
+                this.command.setWorkingDatabase(this.database);
+                //How to execute drop attribute?Need to pass target table to command too?
+                break;
             }
             default: throw new DatabaseException("Invalid Alter Syntax - ADD or DROP expected after [TableName]");
         }
 
     }
+
+    public void parseValue (String token) throws DatabaseException {
+        String regex = "(TRUE|FALSE)" + "|([+-]?\\d+\\.\\d+)" + "|([+-]?\\d+)" + "|(NULL)" + "|'([^'\\\\]*(\\\\.[^'\\\\]*)*)'";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(token);
+        if (!matcher.matches()){
+                throw new DatabaseException("Invalid Value Syntax");
+        }
+
+    }
+
+
+    public void parseValueList(ArrayList<String> tokens) throws DatabaseException {
+        boolean previousIsValue = false;
+        for (int i = 0; i < tokens.size(); i++){
+            if(tokens.get(i).equals(",")){
+                if(!previousIsValue){
+                    throw new DatabaseException("Invalid ValueList Syntax");
+                }
+                else if(i == tokens.size()-1){
+                    throw new DatabaseException("No value after comma");
+                }
+                previousIsValue = false;
+            }
+            else{
+                parseValue(tokens.get(i));
+                previousIsValue = true;
+
+                if(i < tokens.size()-1 && !tokens.get(i+1).equals(",") ){
+                    throw new DatabaseException("Missing comma between values");
+                }
+            }
+        }
+    }
+
 
 
 

@@ -32,21 +32,21 @@ public class TokeniserTest {
 
     @Test
     public void testPreprocessQuery() {
-        this.tokeniser = new Tokeniser("SELECT *        FROM         table12              WHERE id = 1;");
+        this.tokeniser = new Tokeniser("SELECT *        FROM         table12              WHERE name != 'Sion';");
         tokeniser.preprocessQuery();
         assertEquals("SELECT", tokeniser.getTokenByIndex(0));
         assertEquals("*", tokeniser.getTokenByIndex(1));
         assertEquals("FROM", tokeniser.getTokenByIndex(2));
         assertEquals("table12", tokeniser.getTokenByIndex(3));
         assertEquals("WHERE", tokeniser.getTokenByIndex(4));
-        assertEquals("id", tokeniser.getTokenByIndex(5));
-        assertEquals("=", tokeniser.getTokenByIndex(6));
-        assertEquals("1", tokeniser.getTokenByIndex(7));
+        assertEquals("name", tokeniser.getTokenByIndex(5));
+        assertEquals("!=", tokeniser.getTokenByIndex(6));
+        assertEquals("'Sion'", tokeniser.getTokenByIndex(7));
     }
 
     @Test
     public void testPreprocessQueryComplex() {
-        this.tokeniser = new Tokeniser("SELECT name, age FROM students WHERE age >= 18;");
+        this.tokeniser = new Tokeniser("SELECT name, age FROM students WHERE age == 18;");
         this.tokeniser.preprocessQuery();
         assertEquals("SELECT", tokeniser.getTokenByIndex(0));
         assertEquals("name", tokeniser.getTokenByIndex(1));
@@ -56,7 +56,7 @@ public class TokeniserTest {
         assertEquals("students", tokeniser.getTokenByIndex(5));
         assertEquals("WHERE", tokeniser.getTokenByIndex(6));
         assertEquals("age", tokeniser.getTokenByIndex(7));
-        assertEquals(">=", tokeniser.getTokenByIndex(8));
+        assertEquals("==", tokeniser.getTokenByIndex(8));
         assertEquals("18", tokeniser.getTokenByIndex(9));
     }
 

@@ -222,6 +222,153 @@ public class ParserTests {
         assertEquals("Invalid Drop Syntax - DATABASE or TABLE after DROP expected", exception.getMessage());
     }
 
+    //Test parseAlter - ADD with valid syntax
+    @Test
+    public void testParseAlterTableValid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Alter table table1 add name;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        this.parser.parseCommand();
+        try {
+            this.parser.parseCommand();
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+
+    }
+
+    //Test parseAlter = DROP with invalid syntax
+    @Test
+    public void testParseAlterTableInvalid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Alter table table1 drop;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+        assertEquals("Invalid Alter Syntax - at least 6 tokens expected", exception.getMessage());
+    }
+
+    //Test parseAlter = Drop without "TABLE" keyword
+    @Test
+    public void testParseAlterTableInvalid2() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("Alter kill table1 drop name;"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+        assertEquals("Invalid Alter Syntax - \"TABLE\"expected after ALTER", exception.getMessage());
+    }
+
+    //Test parseValue
+    @Test
+    public void testparseValue() throws DatabaseException{
+        String value = "123";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        value = "123.0";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        value = "-123.0";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        value = "+123.012";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        value = "TRUE";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        value = "'AGE'";
+        try {
+            this.parser.parseValue(value);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        //Invalid value: without enclosing' '
+        value = "SimonTheBest!";
+        String finalValue = value;
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseValue(finalValue);
+        });
+    }
+
+    //Test parseValueList with valid syntax
+    @Test
+    public void testParseValueList() throws DatabaseException {
+        ArrayList<String> values = new ArrayList<>();
+        values.add("'Simon'");
+        values.add(",");
+        values.add("123.099");
+        values.add(",");
+        values.add("-123.011");
+        values.add(",");
+        values.add("+123.011112");
+        values.add(",");
+        values.add("TRUE");
+        values.add(",");
+        values.add("'AGE'");
+        try {
+            this.parser.parseValueList(values);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+    }
+    //Test parseValueList with invalid syntax
+    @Test
+    public void testParseValueListInvalid() throws DatabaseException {
+        ArrayList<String> values = new ArrayList<>();
+        values.add("'Simon'");
+        values.add(",");
+        values.add("123.099");
+        values.add(",");
+        values.add("-123.011");
+        values.add(",");
+        values.add("+123.011112");
+        values.add(",");
+        values.add("TRUE");
+        values.add(",");;
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseValueList(values);
+        });
+    }
+
+    //Test parseValueList with invalid syntax
+    @Test
+    public void testParseValueListInvalid2() throws DatabaseException {
+        ArrayList<String> values = new ArrayList<>();
+        values.add("'Simon'");
+        values.add("123.099");
+        values.add(",");
+        values.add("-123.011");
+        values.add(",");
+        values.add("+123.011112");
+        values.add(",");
+        values.add("TRUE");
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseValueList(values);
+        });
+    }
+
+
 }
 
 
