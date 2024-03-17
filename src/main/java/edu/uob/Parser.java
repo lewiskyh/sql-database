@@ -2,10 +2,12 @@ package edu.uob;
 
 import edu.uob.Commands.*;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,10 @@ public class Parser {
     private DBTable table;
 
     private Command command;
+
+    private ArrayList<String> boolOpearator; //"AND" | "OR"
+
+    private ArrayList<Condition> conditions; // Array List of Condition instances
 
 
     public Parser(Tokeniser tokeniser) {
@@ -43,6 +49,14 @@ public class Parser {
 
     public Database getDatabase () {
         return this.database;
+    }
+
+    public ArrayList<Condition> getAllConditions () {
+        return this.conditions;
+    }
+
+    public ArrayList<String> getAllBoolOperators () {
+        return this.boolOpearator;
     }
 
     //First parsing for every command
@@ -84,7 +98,8 @@ public class Parser {
 
             }
             case "INSERT":{
-                //parseInsert();
+                this.command = new InsertCommand();
+                parseInsert();
 
             }
             case "SELECT":{
@@ -363,12 +378,9 @@ public class Parser {
 
     public void parseValue (String token) throws DatabaseException {
         String regex = "(TRUE|FALSE)" + "|([+-]?\\d+\\.\\d+)" + "|([+-]?\\d+)" + "|(NULL)" + "|'([^'\\\\]*(\\\\.[^'\\\\]*)*)'";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(token);
-        if (!matcher.matches()){
-                throw new DatabaseException("Invalid Value Syntax");
-        }
-
+        Pattern regexPattern = Pattern.compile(regex);
+        Matcher matcher = regexPattern.matcher(token);
+        if (!matcher.matches()){ throw new DatabaseException("Invalid Value Syntax"); }
     }
 
 
@@ -395,9 +407,118 @@ public class Parser {
         }
     }
 
+    public void parseInsert () throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(tokeniser.getTokenSize()<8){
+            throw new DatabaseException("Invalid Insert Syntax - at least 8 tokens expected");
+        }
+        if(!token.toUpperCase().equals("INTO")){
+            throw new DatabaseException("Invalid Insert Syntax - INTO expected after INSERT");
+        }
+        if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+1))){
+            throw new DatabaseException("Invalid Insert Syntax - [TableName] expected after INTO");
+        }
+        if(!tokeniser.getTokenByIndex(currentTokenIndex+2).toUpperCase().equals("VALUES")){
+            throw new DatabaseException("Invalid Insert Syntax - VALUES expected after [TableName]");
+        }
+        if(!tokeniser.getTokenByIndex(currentTokenIndex+3).equals("(") || !tokeniser.getTokenByIndex(tokeniser.getTokenSize()-2).equals(")")){
+            throw new DatabaseException("Invalid Insert Syntax - ( and ) expected");
+        }
+        ArrayList<String> valueListTokens = new ArrayList<>();
+        for (int i = currentTokenIndex+4; i < tokeniser.getTokenSize()-2; i++){
+            valueListTokens.add(tokeniser.getTokenByIndex(i));
+        }
+        parseValueList(valueListTokens);
+    }
+
+    public void parseSelect () throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(tokeniser.getTokenSize()<5){
+            throw new DatabaseException("Invalid Select Syntax - at least 5 tokens expected");
+        }
+
+
+    }
+
+    //Method to interpret the WHERE condition and set the fields of condition instances
+    private void createTwoConditions(ArrayList<String> tokens, ArrayList<Integer> boolOperatorIndex) throws DatabaseException{
+        for (Integer index : boolOperatorIndex) {
+            if (!tokens.get(index - 1).equals(")") || !tokens.get(index + 1).equals("(")) {
+                throw new DatabaseException("Invalid WHERE Syntax - missing ) or (");
+            }
+            //Create Condition instance and add to list of conditions
+            Condition condition = new Condition();
+            condition.setAttributeName(tokeniser.getTokenByIndex(index - 4));
+            condition.setComparator(tokeniser.getTokenByIndex(index - 3));
+            condition.setBaseValue(tokeniser.getTokenByIndex(index - 2));
+            this.conditions.add(condition);
+            //Create Condition instance and add to list of conditions
+            condition = new Condition();
+            condition.setAttributeName(tokeniser.getTokenByIndex(index + 2));
+            condition.setComparator(tokeniser.getTokenByIndex(index + 3));
+            condition.setBaseValue(tokeniser.getTokenByIndex(index + 4));
+            this.conditions.add(condition);
+        }
+    }
+
+
+
+
+    //Parse and interpret the WHERE condition, store information to condition class
+    public void parseWhere (ArrayList<String> tokens, int indexAtWhere) throws DatabaseException{
+        //Single Where condition
+        if(!tokeniser.getTokenByIndex(indexAtWhere+1).equals("(")){
+            if(!checkName(tokeniser.getTokenByIndex(indexAtWhere+1))){
+                throw new DatabaseException("Invalid WHERE Syntax - [AttributeName] expected after WHERE");
+            }
+            this.conditions = new ArrayList<>();
+            Condition condition = new Condition();
+            condition.setAttributeName(tokeniser.getTokenByIndex(indexAtWhere+1));
+            if(!tokeniser.getTokenByIndex(indexAtWhere+2).toUpperCase().matches("(==|>=|<=|!=|LIKE|<|>|)")){
+                throw new DatabaseException("Invalid WHERE Syntax - Comparator expected after [AttributeName]");
+            }
+            condition.setComparator(tokeniser.getTokenByIndex(indexAtWhere+2));
+            //Check if the value is a valid value, silent if successful
+            parseValue(tokeniser.getTokenByIndex(indexAtWhere+3));
+            if(!tokeniser.getTokenByIndex(indexAtWhere+4).equals(";")){
+                throw new DatabaseException("Invalid WHERE Syntax - ; expected after VALUE");
+            }
+            condition.setBaseValue(tokeniser.getTokenByIndex(indexAtWhere+3));
+            this.conditions.add(condition);
+        }
+        //More than one conditions
+        else{
+            //Store index of AND / OR
+            ArrayList<Integer> boolOperatorIndex = new ArrayList<>();
+            this.boolOpearator = new ArrayList<>();
+            this.conditions = new ArrayList<>();
+
+            for (int i = indexAtWhere; i < tokens.size(); i++){
+                if(tokens.get(i).equalsIgnoreCase("AND") || tokens.get(i).equalsIgnoreCase("OR")){
+                    boolOperatorIndex.add(i);
+                    this.boolOpearator.add(tokens.get(i).toUpperCase()); // Adding AND / OR to the list
+                }
+            }
+            //Check if every AND/OR is enclosed by ) and (
+            // WHERE (...) AND (...) OR (...);
+            if(!this.boolOpearator.isEmpty()) { createTwoConditions(tokens, boolOperatorIndex); }
+            else{ throw new DatabaseException("Invalid WHERE Syntax - missing AND / OR"); }
+            //Check for last ) before closing ;
+            if(!tokens.get(tokens.size()-2).equals(")")){
+                throw new DatabaseException("Invalid WHERE Syntax - missing ) before ;");
+            }
+
+        }
+    }
+
+
+    }
 
 
 
 
 
-}
+
+

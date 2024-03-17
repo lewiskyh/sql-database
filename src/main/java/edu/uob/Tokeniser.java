@@ -1,6 +1,7 @@
 package edu.uob;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Tokeniser {
@@ -40,10 +41,35 @@ public class Tokeniser {
 
     //code from Simon
     public void preprocessQuery() {
+
+        query = query.trim();
+        String[] fragments = query.split("'");
+        for (int i = 0; i < fragments.length; i++) {
+            if (i % 2 != 0) tokens.add("'" + fragments[i] + "'");
+            else {
+                String[] nextBatchOfTokens = tokenise(fragments[i]);
+                tokens.addAll(Arrays.asList(nextBatchOfTokens));
+            }
+        }
+    }
+
+    private String[] tokenise(String fragment) {
+        for (int i = 0; i < specialCharacters.length; i++) {
+            fragment = fragment.replace(specialCharacters[i], " " + specialCharacters[i] + " ");
+        }
+        while (fragment.contains("  ")) fragment = fragment.replaceAll("  ", " ");
+
+        fragment = fragment.trim();
+
+        return fragment.split(" ");
+    }
+
+        /**
         String query = this.query.trim();
         // Split the query into fragments on singlespace
         String[] fragments = query.split("\\s+");
         for (int i = 0; i < fragments.length; i++) {
+            System.out.println(fragments[i]);
             processFragment(fragments[i]);
         }
     }
@@ -66,5 +92,5 @@ public class Tokeniser {
                 tokens.add(token);
             }
         }
-    }
+    }*/
 }
