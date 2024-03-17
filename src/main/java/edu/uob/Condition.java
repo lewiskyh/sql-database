@@ -4,7 +4,7 @@ public class Condition {
 
     private String attributeName;
 
-    private String comparator; // ">", "<", "==", "!=", ">=", "<=", "LIKE"
+    private String comparator; // ">", "<", "==", "!=", ">=", "<=", "LIKE", "="
 
     private String baseValue;
 
@@ -48,9 +48,15 @@ public class Condition {
                 return valueToCompare.compareTo(baseValue) <= 0;
             case "LIKE":
                 return valueToCompare.contains(baseValue);
+
             default:
                 return false;
         }
     }
+
+    //To be implemented to change cellvalue in table
+    public String updateData (){ return this.baseValue; }
+
+
 
 }

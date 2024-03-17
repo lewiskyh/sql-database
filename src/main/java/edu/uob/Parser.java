@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
+    private boolean wildCard = false;
+
     private Tokeniser tokeniser;
 
     private Database database;
@@ -100,19 +102,22 @@ public class Parser {
             case "INSERT":{
                 this.command = new InsertCommand();
                 parseInsert();
-
+                break;
             }
             case "SELECT":{
                 this.command = new SelectCommand();
+                parseSelect();
                 break;
-
             }
             case "UPDATE":{
-                //parseUpdate();
+                this.command = new UpdateCommand();
+                parseUpdate();
+                break;
             }
             case "DELETE":{
-                //parseDelete();
-
+                this.command = new DeleteCommand();
+                parseDelete();
+                break;
             }
             case "JOIN":{
                 //parseJoin();
@@ -438,30 +443,74 @@ public class Parser {
         if(tokeniser.getTokenSize()<5){
             throw new DatabaseException("Invalid Select Syntax - at least 5 tokens expected");
         }
+        parseWildAttributeList();
+        int indexAtFrom = 0;
+        for (int i = 0; i < tokeniser.getTokenSize(); i++){
+            if(tokeniser.getTokenByIndex(i).equalsIgnoreCase("FROM")){
+                indexAtFrom = i;
+                break;
+            }
+        }
+        if(indexAtFrom == 0){
+            throw new DatabaseException("Invalid Select Syntax - FROM expected");
+        }
+        if(!checkName(tokeniser.getTokenByIndex(indexAtFrom+1))){
+            throw new DatabaseException("Invalid Select Syntax - [TableName] expected after FROM");
+        }
+        this.command.setWorkingStructure("TABLE");
+        this.command.setDatabaseName(this.database.getDatabaseName());
+        this.command.setWorkingDatabase(this.database);
+        this.command.addTableName(tokeniser.getTokenByIndex(indexAtFrom+1));
+
+        if(tokeniser.getTokenSize()<indexAtFrom+2){
+            throw new DatabaseException("Invalid Select Syntax - [TABLENAME]; OR [TABLENAME] WHERE <Condition>; expected");
+        }
+
+        if(tokeniser.getTokenByIndex(indexAtFrom+2).equalsIgnoreCase("WHERE")){
+            parseWhere(tokeniser.getAllTokens(), indexAtFrom+2);
+        }
+        else if(!tokeniser.getTokenByIndex(indexAtFrom+2).equals(";")){
+            throw new DatabaseException("Invalid Select Syntax - ; or WHERE expected after [TableName]");
+        }
 
 
     }
 
-    //Method to interpret the WHERE condition and set the fields of condition instances
-    private void createTwoConditions(ArrayList<String> tokens, ArrayList<Integer> boolOperatorIndex) throws DatabaseException{
-        for (Integer index : boolOperatorIndex) {
-            if (!tokens.get(index - 1).equals(")") || !tokens.get(index + 1).equals("(")) {
-                throw new DatabaseException("Invalid WHERE Syntax - missing ) or (");
+    public void parseWildAttributeList () throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if (token.equals("*")) {
+            this.command.setWildCard(true);
+            return;
+        }
+        if(!checkName(token)){
+            throw new DatabaseException("Invalid WildAttributeList Syntax - * or [AttributeName] expected");
+        }
+        //Check if next token is "," or "FROM"
+        if(tokeniser.getTokenByIndex(currentTokenIndex+1).equals(",")){
+            //Add elements to ArrayList until From
+            ArrayList<String> attributeListTokens = new ArrayList<>();
+            for (int i = currentTokenIndex; i < tokeniser.getTokenSize(); i++){
+                if(tokeniser.getTokenByIndex(i).toUpperCase().equals("FROM")){ break; }
+                attributeListTokens.add(tokeniser.getTokenByIndex(i));
             }
-            //Create Condition instance and add to list of conditions
-            Condition condition = new Condition();
-            condition.setAttributeName(tokeniser.getTokenByIndex(index - 4));
-            condition.setComparator(tokeniser.getTokenByIndex(index - 3));
-            condition.setBaseValue(tokeniser.getTokenByIndex(index - 2));
-            this.conditions.add(condition);
-            //Create Condition instance and add to list of conditions
-            condition = new Condition();
-            condition.setAttributeName(tokeniser.getTokenByIndex(index + 2));
-            condition.setComparator(tokeniser.getTokenByIndex(index + 3));
-            condition.setBaseValue(tokeniser.getTokenByIndex(index + 4));
-            this.conditions.add(condition);
+            //Parse the attribute list
+            parseAttributeList(attributeListTokens);
+            //Need to interpret the attribute list - maybe interpret in the parseAttribute method?
+            return;
+        }
+        //If next token is FROM, only one attribute
+        else if(tokeniser.getTokenByIndex(currentTokenIndex+1).equals("FROM")){
+            //need to interpret adding attribute to command.
+            return;
+        }
+        else{
+            throw new DatabaseException("Invalid WildAttributeList Syntax - , or FROM expected after attribute name");
         }
     }
+
+
+
 
 
 
@@ -513,8 +562,110 @@ public class Parser {
         }
     }
 
+    //Method to interpret the WHERE condition and set the fields of condition instances
+    private void createTwoConditions(ArrayList<String> tokens, ArrayList<Integer> boolOperatorIndex) throws DatabaseException{
+        for (Integer index : boolOperatorIndex) {
+            if (!tokens.get(index - 1).equals(")") || !tokens.get(index + 1).equals("(")) {
+                throw new DatabaseException("Invalid WHERE Syntax - missing ) or (");
+            }
+            //Create Condition instance and add to list of conditions
+            Condition condition = new Condition();
+            condition.setAttributeName(tokeniser.getTokenByIndex(index - 4));
+            condition.setComparator(tokeniser.getTokenByIndex(index - 3));
+            condition.setBaseValue(tokeniser.getTokenByIndex(index - 2));
+            this.conditions.add(condition);
+            //Create Condition instance and add to list of conditions
+            condition = new Condition();
+            condition.setAttributeName(tokeniser.getTokenByIndex(index + 2));
+            condition.setComparator(tokeniser.getTokenByIndex(index + 3));
+            condition.setBaseValue(tokeniser.getTokenByIndex(index + 4));
+            this.conditions.add(condition);
+        }
+    }
+
+    //Not yet implement command execution.
+    public void parseUpdate() throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(this.database.getDatabaseName().isEmpty()){
+            throw new DatabaseException("No database selected for updating");
+        }
+        if(!checkName(token)) {
+            throw new DatabaseException("Invalid Update Syntax - [TableName] expected after UPDATE");
+        }
+        if(!tokeniser.getTokenByIndex(currentTokenIndex+1).toUpperCase().equals("SET")){
+            throw new DatabaseException("Invalid Update Syntax - SET expected after [TableName]");
+        }
+        int indexAtSet = currentTokenIndex+1;
+        int indexAtWhere = 0;
+        for (int i = 0; i < tokeniser.getTokenSize(); i++){
+            if(tokeniser.getTokenByIndex(i).equalsIgnoreCase("WHERE")){
+                indexAtWhere = i;
+                break;
+            }
+        }
+        parseNameValueList(indexAtSet, indexAtWhere);
+        parseWhere(tokeniser.getAllTokens(), indexAtWhere);
+    }
+
+    public void parseNameValuePair(int nameValuePairIndex) throws DatabaseException {
+        String token = tokeniser.getTokenByIndex(nameValuePairIndex);
+        if(!checkName(token)){
+            throw new DatabaseException("Invalid NameValuePair Syntax - [AttributeName] expected");
+        }
+        if(!tokeniser.getTokenByIndex(nameValuePairIndex+1).equals("=")){
+            throw new DatabaseException("Invalid NameValuePair Syntax - = expected after [AttributeName]");
+        }
+        parseValue(tokeniser.getTokenByIndex(nameValuePairIndex+2));
+    }
+
+    public void parseNameValueList(int setIndex, int whereIndex) throws DatabaseException {
+        int countOfComma = 0;
+        int nameValuePairIndex = setIndex+1;
+        //Loop between set and where to count commas
+        for (int i = setIndex; i < whereIndex; i++){
+            if(tokeniser.getTokenByIndex(i).equals(",")){
+                countOfComma++;
+            }
+        }
+        //Should only be one name value pair
+        if(countOfComma == 0){
+            if(!tokeniser.getTokenByIndex(nameValuePairIndex+3).equalsIgnoreCase("WHERE")){
+                throw new DatabaseException("Invalid NameValueList Syntax - missing , between NameValuePairs");
+            }
+            parseNameValuePair(nameValuePairIndex);
+            return;
+        }
+        while(countOfComma > 0){
+            parseNameValuePair(nameValuePairIndex);
+            //Move to next name value pair by 4 tokens "AttributeName = Value" so 4 tokens
+            nameValuePairIndex += 4;
+            countOfComma--;
+        }
 
     }
+
+    public void parseDelete () throws DatabaseException {
+        int currentTokenIndex = 1;
+        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        if(this.database.getDatabaseName().isEmpty()){
+            throw new DatabaseException("No database selected for deleting");
+        }
+        if(!token.equalsIgnoreCase("FROM")){
+            throw new DatabaseException("Invalid Delete Syntax - FROM expected after DELETE");
+        }
+        if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+1))){
+            throw new DatabaseException("Invalid Delete Syntax - [TableName] expected after FROM");
+        }
+        //Check if the table exists in the database
+        if(this.database.getDBTable(tokeniser.getTokenByIndex(currentTokenIndex+1)) == null){
+            throw new DatabaseException("Invalid Delete Syntax - [TableName] does not exist in the database");
+        }
+        if(tokeniser.getTokenByIndex(currentTokenIndex+2).equalsIgnoreCase("WHERE")){
+            parseWhere(tokeniser.getAllTokens(), currentTokenIndex+2);
+        }
+    }
+}
 
 
 

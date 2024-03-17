@@ -15,6 +15,8 @@ public class Command {
     protected String databaseFolderPath;
     protected String workingStructure;
 
+    protected boolean wildCard;
+
     protected List<String> attributeNameList = new ArrayList<>();
 
     protected List<String> tableNameList = new ArrayList<>();
@@ -68,6 +70,10 @@ public class Command {
     public List<String> getTableNameList(){ return this.tableNameList; }
 
     public List<String> getAttributeList(){ return this.attributeNameList; }
+
+    public void setWildCard(boolean wildCard){
+        this.wildCard = wildCard;
+    }
 
 
     public void executeCommand(){
