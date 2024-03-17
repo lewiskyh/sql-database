@@ -452,6 +452,135 @@ public class ParserTests {
             this.parser.parseWhere(this.parser.getTokeniser().getAllTokens(),1);
         });
     }
+    //Test parseSelect with valid syntax
+    @Test
+    public void testParseSelectValid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("select name, age from table where name != 'Lewis';"));
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            this.parser.parseCommand();
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //Assert conditions are stored
+        assertEquals("name", this.parser.getAllConditions().get(0).getAttributeName());
+        assertEquals("!=", this.parser.getAllConditions().get(0).getComparator());
+        assertEquals("'Lewis'", this.parser.getAllConditions().get(0).getBaseValue());
+        //Not yet implement attributes addition......
+    }
+
+    //Test parseSelect with invalid syntax
+    @Test
+    public void testParseSelectInvalid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("select name age table where name != 'Lewis';"));
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+    }
+
+    //Test parseNameValueList with valid syntax
+    @Test
+    public void testParseNameValueListValid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("set name = 'Lewis' where age = 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            this.parser.parseNameValueList(0,4);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+    }
+
+    //Test parseNameValueList with 2 pairs
+    @Test
+    public void testParseNameValueListValid2() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("set name = 'Lewis' , money = 100 where age = 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            this.parser.parseNameValueList(0,4);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+    }
+
+    //Test parseNameValueList with invalid syntax (without ,)
+    @Test
+    public void testParseNameValueListInvalid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("set name = 'Lewis' money = 100 where age = 20"));
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseNameValueList(0,4);
+        });
+    }
+
+    //Test parseUpdate with full command
+    @Test
+    public void testParseUpdateValid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("update tablename set name = 'Lewis' , money = 100 where age == 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        try {
+            this.parser.parseCommand();
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //Assert conditions are stored
+        assertEquals("age", this.parser.getAllConditions().get(0).getAttributeName());
+        assertEquals("==", this.parser.getAllConditions().get(0).getComparator());
+        assertEquals("20", this.parser.getAllConditions().get(0).getBaseValue());
+    }
+
+    //Test parseDelete with valid syntax
+    @Test
+    public void testParseDeleteValid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("delete from tablename where age <= 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        Database newDatabase = new Database("newDatabase");
+        DBTable table = new DBTable(newDatabase.getDatabaseFolderPath(), "tablename");
+        newDatabase.addDBTable(table);
+        //Ensure tablename exists
+
+        this.parser.setDatabase(newDatabase);
+        try {
+            this.parser.parseCommand();
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //Assert conditions are stored
+        assertEquals("age", this.parser.getAllConditions().get(0).getAttributeName());
+        assertEquals("<=", this.parser.getAllConditions().get(0).getComparator());
+        assertEquals("20", this.parser.getAllConditions().get(0).getBaseValue());
+    }
+
+    //Test parseDelete with invalid syntax - without FROM
+    @Test
+    public void testParseDeleteInvalid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("delete tablename where age <= 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+    }
+
+    //Test parseDelete without existing table, correct syntax
+    @Test
+    public void testParseDeleteInvalid2() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("delete from tablename where age <= 20;"));
+        this.parser.getTokeniser().preprocessQuery();
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+    }
+
 
 
 
