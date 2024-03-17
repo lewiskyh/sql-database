@@ -42,6 +42,7 @@ public class TokeniserTest {
         assertEquals("name", tokeniser.getTokenByIndex(5));
         assertEquals("!=", tokeniser.getTokenByIndex(6));
         assertEquals("'Sion'", tokeniser.getTokenByIndex(7));
+        assertEquals(";", tokeniser.getTokenByIndex(8));
     }
 
     @Test

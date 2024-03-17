@@ -368,6 +368,92 @@ public class ParserTests {
         });
     }
 
+    //Test parseInsert with valid syntax
+    @Test
+    public void testParseInsertValid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("insert into table values ('Lewis', +123.099, -123.011, TRUE, 'AGE');"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+
+        //Assert no exception is thrown
+        try {
+            this.parser.parseCommand();
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+    }
+    //Test parseInsert with invalid syntax - missing "INTO"
+    @Test
+    public void testParseInsertInvalid() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("insert table values ('Lewis', +123.099, -123.011, TRUE, 'AGE');"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+    }
+
+    //Test parseInsert with invalid syntax - used { instead of (
+    @Test
+    public void testParseInsertInvalid2() throws DatabaseException, IOException {
+        this.parser = new Parser(new Tokeniser("insert into table values {'Lewis', +123.099, -123.011, TRUE, 'AGE'};"));
+        Database newDatabase = new Database("newDatabase");
+        this.parser.setDatabase(newDatabase);
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseCommand();
+        });
+    }
+
+    //Test parseWhere with valid syntax
+    @Test
+    public void testParseWhereValid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("where name != 'Lewis';"));
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            this.parser.parseWhere(this.parser.getTokeniser().getAllTokens(),0);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        //Assert conditions are stored
+        assertEquals("name", this.parser.getAllConditions().get(0).getAttributeName());
+        assertEquals("!=", this.parser.getAllConditions().get(0).getComparator());
+        assertEquals("'Lewis'", this.parser.getAllConditions().get(0).getBaseValue());
+    }
+
+    //Test parseWhere with two valid conditions
+    @Test
+    public void testParseWhereValid2() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("where ( name != 'lewis' ) and ( age > 20 );"));
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            this.parser.parseWhere(this.parser.getTokeniser().getAllTokens(),0);
+        } catch (DatabaseException e) {
+            fail("Incorrect exception:" + e.getMessage());
+        }
+        //Assert conditions and booloperator are stored
+        assertEquals("name", this.parser.getAllConditions().get(0).getAttributeName());
+        assertEquals("!=", this.parser.getAllConditions().get(0).getComparator());
+        assertEquals("'lewis'", this.parser.getAllConditions().get(0).getBaseValue());
+        assertEquals("age", this.parser.getAllConditions().get(1).getAttributeName());
+        assertEquals(">", this.parser.getAllConditions().get(1).getComparator());
+        assertEquals("20", this.parser.getAllConditions().get(1).getBaseValue());
+        assertEquals("AND", this.parser.getAllBoolOperators().get(0));
+
+    }
+    //Test parseWhere with invalid syntax
+    @Test
+    public void testParseWhereInvalid() throws DatabaseException {
+        this.parser = new Parser(new Tokeniser("where ( name != 'Lewis' and ( age > 20 );"));
+        this.parser.getTokeniser().preprocessQuery();
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> {
+            this.parser.parseWhere(this.parser.getTokeniser().getAllTokens(),1);
+        });
+    }
+
+
 
 }
 
