@@ -13,7 +13,7 @@ public class DBTable {
 
     private List<Map<String,String>> entries;
 
-    private Integer numberOfEntries;
+    private Integer maxID; // Only change when new entry added
 
     private String tableFilePath;
 
@@ -23,15 +23,16 @@ public class DBTable {
         this.tableName = "";
         this.attributes = new ArrayList<>();
         this.entries = new ArrayList<>();
-        this.numberOfEntries = 0;
+        this.maxID = 0;
         this.databaseFolderPath = databaseFolderPath;
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
+        this.attributes.add("id");
     }
 
     //Constructor with table name
     public DBTable(String databaseFolderPath, String tableName){
         this.tableName = tableName;
-        this.numberOfEntries = 0;
+        this.maxID = 0;
         this.attributes = new ArrayList<>();
         this.entries = new ArrayList<>();
         this.databaseFolderPath = databaseFolderPath;
@@ -42,6 +43,8 @@ public class DBTable {
     public Integer getNumberOfEntries() { return this.entries.size();}
 
     public Integer getNumberOfAttributes() { return this.attributes.size(); }
+
+    public Integer getMaxID() { return this.maxID; }
 
     public void setTable(String tableName) {
         this.tableName = tableName;
@@ -79,25 +82,19 @@ public class DBTable {
 
     public void addEntry(Map<String, String> entry) {
         this.entries.add(new HashMap<>(entry));
-        this.numberOfEntries++;
+        this.maxID++;
     }
+
 
     public void deleteEntry (String primaryKey){
         for(Map<String, String> entry : entries){
             if(entry.get("id").equals(primaryKey)){
                 entries.remove(entry);
-                this.numberOfEntries--;
                 return;
             }
         }
     }
 
-    public void deleteTable () throws IOException {
-        File deleteFile = new File(this.tableFilePath);
-        if(deleteFile.exists()){
-            deleteFile.delete();
-        }
-    }
 
     public void readFromTable() throws IOException {
         if(this.tableFilePath == null || this.tableFilePath.isEmpty()){
@@ -139,8 +136,7 @@ public class DBTable {
     public void writeTable() throws IOException {
         File writeFile = new File(this.tableFilePath);
 
-        if (writeFile.exists()) { throw new IOException("Table file already exists at " + this.tableFilePath); }
-        writeFile.createNewFile();
+        if (!writeFile.exists()){writeFile.createNewFile();}
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(writeFile))) {
             writeFirstLine(bufferedWriter);
@@ -166,7 +162,11 @@ public class DBTable {
         for(Map<String, String> row: allRows){
             for (int i = 0; i< attributes.size(); i++){
                 String data = row.get(attributes.get(i));
+                //if data start and end with single quote, trim them
                 if (data == null) { data = ""; }
+                else if (data.startsWith("'") && data.endsWith("'")) {
+                    data = data.substring(1, data.length() - 1);
+                }
                 bufferedWriter.write(data + "\t");
             }
             //move to next line

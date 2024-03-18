@@ -5,6 +5,7 @@ import edu.uob.Commands.*;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -241,7 +242,7 @@ public class Parser {
                 previousIsAttribute = false;
             }
             else{
-                if(!checkName(tokens.get(i))){
+                if(!checkName(tokens.get(i)) || tokens.get(i).equalsIgnoreCase("id")){
                     throw new DatabaseException("Invalid AttributeName");
                 }
                 previousIsAttribute = true;
@@ -312,13 +313,18 @@ public class Parser {
         if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+1))){
              throw new DatabaseException("Invalid Alter Syntax - [TableName] expected after \"TABLE\"");
         }
+        if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected"); }
+        this.command.setWorkingDatabase(this.database);
+        String alterTableName = tokeniser.getTokenByIndex(currentTokenIndex+1).toLowerCase();
+        //Set alterTable to command
+        this.command.setAlterTable(this.database.getDBTable(alterTableName));
         switch (tokeniser.getTokenByIndex(currentTokenIndex+2).toUpperCase()){
             case "ADD":{
                 if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+3))){
                     throw new DatabaseException("Invalid Alter Syntax - [AttributeName] expected after ADD");
                 }
-                this.command.setWorkingStructure("TABLE");
-                this.command.setWorkingDatabase(this.database);
+                this.command.setAlteration("ADD");
+                this.command.setAttributeToAlter(tokeniser.getTokenByIndex(currentTokenIndex+3));
                 //How to execute add attrbute? Need to pass target table to command too?
                 break;
 
@@ -327,8 +333,8 @@ public class Parser {
                 if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+3))){
                     throw new DatabaseException("Invalid Alter Syntax - [AttributeName] expected after DROP");
                 }
-                this.command.setWorkingStructure("TABLE");
-                this.command.setWorkingDatabase(this.database);
+                this.command.setAlteration("DROP");
+                this.command.setAttributeToAlter(tokeniser.getTokenByIndex(currentTokenIndex+3));
                 //How to execute drop attribute?Need to pass target table to command too?
                 break;
             }
@@ -347,6 +353,8 @@ public class Parser {
 
     public void parseValueList(ArrayList<String> tokens) throws DatabaseException {
         boolean previousIsValue = false;
+        //Store the value list
+        List<String> valueList = new ArrayList<>();
         for (int i = 0; i < tokens.size(); i++){
             if(tokens.get(i).equals(",")){
                 if(!previousIsValue){
@@ -364,8 +372,11 @@ public class Parser {
                 if(i < tokens.size()-1 && !tokens.get(i+1).equals(",") ){
                     throw new DatabaseException("Missing comma between values");
                 }
+                valueList.add(tokens.get(i));
             }
         }
+        //pass the value list to command
+        this.command.setValueListStored(valueList);
     }
 
     public void parseInsert () throws DatabaseException {
@@ -380,6 +391,16 @@ public class Parser {
         if(!checkName(tokeniser.getTokenByIndex(currentTokenIndex+1))){
             throw new DatabaseException("Invalid Insert Syntax - [TableName] expected after INTO");
         }
+        String workingTableName = tokeniser.getTokenByIndex(currentTokenIndex+1).toLowerCase();
+        if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected");}
+        this.command.setWorkingStructure("TABLE");
+        //Check if working table exists in the database
+        if(this.database.getDBTable(workingTableName) == null){
+            throw new DatabaseException("Invalid Insert Syntax - [TableName] does not exist in the database");
+        }
+        this.command.setWorkingDatabase(this.database);
+        this.command.setInsertTableName(workingTableName);
+
         if(!tokeniser.getTokenByIndex(currentTokenIndex+2).toUpperCase().equals("VALUES")){
             throw new DatabaseException("Invalid Insert Syntax - VALUES expected after [TableName]");
         }
@@ -391,6 +412,10 @@ public class Parser {
             valueListTokens.add(tokeniser.getTokenByIndex(i));
         }
         parseValueList(valueListTokens);
+        //ValueList stored in command whe parsing parseValueList
+
+
+
     }
 
     public void parseSelect () throws DatabaseException {

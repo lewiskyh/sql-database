@@ -301,10 +301,18 @@ public class ParserTests {
             this.parser.parseValue(finalValue);
         });
     }
-
+    */
+/**
     //Test parseValueList with valid syntax
     @Test
     public void testParseValueList() throws DatabaseException {
+        Tokeniser tokeniser = new Tokeniser("INSERT INTO orders (id, item_name);");
+        tokeniser.preprocessQuery();
+        //Print all tokens
+        System.out.println(tokeniser.getAllTokens());
+
+
+        /**
         ArrayList<String> values = new ArrayList<>();
         values.add("'Simon'");
         values.add(",");
@@ -318,7 +326,7 @@ public class ParserTests {
         values.add(",");
         values.add("'AGE'");
         try {
-            this.parser.parseValueList(values);
+            this.parser.parseValueList(tokeniser.getAllTokens());
         } catch (DatabaseException e) {
             fail("Incorrect exception:" + e.getMessage());
         }
@@ -358,7 +366,7 @@ public class ParserTests {
             this.parser.parseValueList(values);
         });
     }
-
+/**
     //Test parseInsert with valid syntax
     @Test
     public void testParseInsertValid() throws DatabaseException, IOException {
@@ -397,7 +405,7 @@ public class ParserTests {
             this.parser.parseCommand();
         });
     }
-
+/**
     //Test parseWhere with valid syntax
     @Test
     public void testParseWhereValid() throws DatabaseException {

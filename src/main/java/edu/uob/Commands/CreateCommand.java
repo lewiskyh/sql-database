@@ -30,6 +30,8 @@ public class CreateCommand extends Command{
                 }
             }
             createTable.writeTable();
+            //Ensure tables are linked to the database
+            workingDatabase.setupDatabase();
         }
     }
 }
