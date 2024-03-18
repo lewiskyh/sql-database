@@ -2,12 +2,9 @@ package edu.uob;
 
 import edu.uob.Commands.*;
 
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,15 +22,14 @@ public class Parser {
 
     private Command command;
 
+    private String[] sqlKeyWords = {"USE", "CREATE", "DROP", "ALTER", "INSERT", "SELECT", "UPDATE", "DELETE", "JOIN", "AND", "OR", "LIKE", "SET", "FROM", "WHERE", "INTO", "VALUES", "TABLE", "DATABASE"};
+
     private ArrayList<String> boolOpearator; //"AND" | "OR"
 
     private ArrayList<Condition> conditions; // Array List of Condition instances
 
 
-    public Parser(Tokeniser tokeniser) {
-        this.tokeniser = tokeniser;
-        this.database = new Database("");
-    }
+    public Parser() {}
 
     public Command getCommand(){ return this.command; }
 
@@ -135,7 +131,7 @@ public class Parser {
         //Parse the name of the database
         if(checkName(token)){
             //Set database name
-            this.database.setDatabaseName(token);
+            this.database = new Database(token.toLowerCase());
             this.database.setupDatabase();
             this.command.setWorkingDatabase(this.database);
             return;
@@ -143,11 +139,18 @@ public class Parser {
         throw new DatabaseException("Invalid Use Syntax");
     }
     //Check if the name conforms with the [PlaintText] using regex
-    public boolean checkName (String token){
+    public boolean checkName (String token) throws DatabaseException {
 
         if (!token.matches("^[A-Za-z0-9]+$")){
             return false;
         }
+
+        for(String sqlKeyWord : sqlKeyWords){
+            if (token.toUpperCase().equals(sqlKeyWord)){
+                throw new DatabaseException("Invalid Syntax: SQL Keyword used as name");
+            }
+        }
+
         return true;
     }
 
@@ -173,21 +176,6 @@ public class Parser {
         }
     }
 
-    /**
-
-    public void interpretCreateDatabase() throws IOException {
-        //Parse the name of the database
-        String token = tokeniser.getTokenByIndex(2);
-        if(checkName(token) && this.tokeniser.getTokenByIndex(3).equals(";")){
-            File newDatabase = new File(this.database.getDatabaseFolderPath());
-            //Check if same name database folder already exists
-            if(newDatabase.exists()) throw new IOException("Database already exists");
-            newDatabase.mkdir();
-        }
-        else {
-            throw new IOException("Invalid CreateDatabase Syntax");
-        }
-    }*/
 
     public void parseCreateDatabase() throws DatabaseException {
         //Parse the name of the database
@@ -196,8 +184,9 @@ public class Parser {
         if(!checkName(token) ||!this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
             throw new DatabaseException("Invalid CreateDatabase Syntax");
         }
+        this.database = new Database(token.toLowerCase());
+        this.command.setWorkingDatabase(this.database);
         this.command.setWorkingStructure("DATABASE");
-        this.command.setDatabaseName(token);
     }
 
     public void parseCreateTable() throws DatabaseException {
@@ -210,6 +199,8 @@ public class Parser {
                 if (!this.database.getDatabaseName().isEmpty()) {
                     this.command.setWorkingDatabase(this.database);
                     this.command.setWorkingStructure("TABLE");
+                    DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
+                    this.command.setCreateTable(createTable);
                 }
                 else { throw new DatabaseException("Didn't not choose database to create table"); }
             }
@@ -224,6 +215,8 @@ public class Parser {
                 if(!this.database.getDatabaseName().isEmpty()){
                     this.command.setWorkingDatabase(this.database);
                     this.command.setWorkingStructure("TABLE");
+                    DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
+                    this.command.setCreateTable(createTable);
                     this.command.addAttributeList(attributeListTokens);
                 }
                 else { throw new DatabaseException("No database selected"); }
@@ -233,43 +226,6 @@ public class Parser {
         }
 
     }
-    /**
-
-    public void interpretCreateTable () throws DatabaseException, IOException {
-        //CREATE TABLE [TableName] | CREATE TABLE [TableName] "(" <AttributeList> ")"
-        String token = tokeniser.getTokenByIndex(2);
-        //Parse the name of table
-        if(checkName(token)){
-            //Check if the next token is "(", second last token is ")"
-            if(tokeniser.getTokenByIndex(3).equals("(") && tokeniser.getTokenByIndex(tokeniser.getTokenSize()-2).equals(")")){
-                //Parse the attribute list
-                ArrayList<String> attributeListTokens = new ArrayList<>();
-                for (int i = 4; i < tokeniser.getTokenSize()-2; i++){
-                    attributeListTokens.add(tokeniser.getTokenByIndex(i));
-                }
-                parseAttributeList(attributeListTokens);
-
-                //Create new table and add attributes
-                DBTable newTable = new DBTable(this.database.getDatabaseFolderPath(), token);
-                for (String attribute: attributeListTokens){
-                    if (!attribute.equals(",")) {
-                        newTable.addAttribute(attribute);
-                    }
-                }
-            }
-            else if (tokeniser.getTokenByIndex(3).equals(";")){
-             //Create new table
-                DBTable newTable = new DBTable(this.database.getDatabaseFolderPath(), token);
-                newTable.writeTable();
-                this.database.addDBTable(newTable);
-            }
-            else{
-                throw new DatabaseException("Invalid CreateTable Syntax");
-            }
-        }
-
-
-    }*/
 
     //Pass tokens between "(" and ")" to parseAttributeList
     public void parseAttributeList(ArrayList<String> tokens) throws DatabaseException {
@@ -298,7 +254,7 @@ public class Parser {
         }
     }
 
-    public void parseDrop() throws DatabaseException {
+    public void parseDrop() throws DatabaseException, IOException {
         int currentTokenIndex = 1;
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
         if(this.database.getDatabaseName().isEmpty()){
@@ -317,12 +273,13 @@ public class Parser {
         }
     }
 
-    public void parseDropDatabase() throws DatabaseException {
+    public void parseDropDatabase() throws DatabaseException, IOException {
         int currentTokenIndex = 2;
-        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        String token = tokeniser.getTokenByIndex(currentTokenIndex).toLowerCase();
         if(checkName(token) && this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
+            this.database = new Database(token.toLowerCase());
+            this.database.setupDatabase();
             this.command.setWorkingStructure("DATABASE");
-            this.command.setDatabaseName(token);
             this.command.setWorkingDatabase(this.database);
         }
         else {
@@ -332,13 +289,12 @@ public class Parser {
 
     public void parseDropTable() throws DatabaseException {
         int currentTokenIndex = 2;
-        String token = tokeniser.getTokenByIndex(currentTokenIndex);
+        String token = tokeniser.getTokenByIndex(currentTokenIndex).toLowerCase();
         if(checkName(token) && this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
+            if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected"); }
             this.command.setWorkingStructure("TABLE");
             this.command.setWorkingDatabase(this.database);
-            //print
-            System.out.print (token);
-            this.command.addTableName(token);
+            this.command.setDropTable(this.database.getDBTable(token));
         }
         else {
             throw new DatabaseException("Invalid Drop Database Syntax - [TableName] expected OR missing ;");

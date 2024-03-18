@@ -1,8 +1,11 @@
 package edu.uob.Commands;
 
+import edu.uob.DBTable;
 import edu.uob.Database;
+import edu.uob.DatabaseException;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +17,10 @@ public class Command {
     protected String databaseName;
     protected String databaseFolderPath;
     protected String workingStructure;
+
+    protected DBTable createTable;
+
+    protected DBTable dropTable;
 
     protected boolean wildCard;
 
@@ -27,6 +34,14 @@ public class Command {
 
     public String getDatabaseName() {
         return databaseName;
+    }
+
+    public void setCreateTable(DBTable createTable){
+        this.createTable = createTable;
+    }
+
+    public void setDropTable(DBTable dropTable){
+        this.dropTable = dropTable;
     }
 
     public String getDatabaseFolderPath() {
@@ -75,8 +90,7 @@ public class Command {
         this.wildCard = wildCard;
     }
 
-
-    public void executeCommand(){
+    public void executeCommand() throws DatabaseException, IOException {
         //To be overridden by sub-classes
     }
 }

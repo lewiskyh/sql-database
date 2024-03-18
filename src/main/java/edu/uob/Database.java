@@ -42,12 +42,23 @@ public class Database {
         setDatabaseFolderPath();
     }
 
+    public HashMap<String, DBTable> getTableMaps(){
+        return this.mapsOfTables;
+    }
+
+
     public DBTable getDBTable(String tableName) {
         return this.mapsOfTables.get(tableName);
     }
 
     public void addDBTable(DBTable table) {
         this.mapsOfTables.put(table.getTableName(), table);
+    }
+
+    public void deleteDBTable(String tableName) {
+        this.mapsOfTables.remove(tableName);
+        File deleteTable = new File(getTableFilePath(tableName));
+        deleteTable.delete();
     }
 
     public void setupDatabase() throws IOException {

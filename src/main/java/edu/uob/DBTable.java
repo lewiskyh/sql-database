@@ -36,6 +36,7 @@ public class DBTable {
         this.entries = new ArrayList<>();
         this.databaseFolderPath = databaseFolderPath;
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
+        this.attributes.add("id");
     }
 
     public Integer getNumberOfEntries() { return this.entries.size();}
@@ -91,6 +92,13 @@ public class DBTable {
         }
     }
 
+    public void deleteTable () throws IOException {
+        File deleteFile = new File(this.tableFilePath);
+        if(deleteFile.exists()){
+            deleteFile.delete();
+        }
+    }
+
     public void readFromTable() throws IOException {
         if(this.tableFilePath == null || this.tableFilePath.isEmpty()){
             throw new IOException("File path not set");
@@ -131,9 +139,9 @@ public class DBTable {
     public void writeTable() throws IOException {
         File writeFile = new File(this.tableFilePath);
 
-        if (!writeFile.exists()) {
-            writeFile.createNewFile();
-        }
+        if (writeFile.exists()) { throw new IOException("Table file already exists at " + this.tableFilePath); }
+        writeFile.createNewFile();
+
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(writeFile))) {
             writeFirstLine(bufferedWriter);
             writeRows(bufferedWriter);

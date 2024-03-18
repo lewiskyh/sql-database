@@ -1,5 +1,7 @@
 package edu.uob;
 
+import edu.uob.Commands.Command;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,9 +15,11 @@ public class DBServer {
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
 
+    Parser parser = new Parser();
+
+
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
-        //server.readDataFromFile("people.tab");
         server.blockingListenOn(8888);
     }
 
@@ -41,7 +45,19 @@ public class DBServer {
     */
     public String handleCommand(String command) {
         // TODO implement your server logic here
-        return "";
+        Tokeniser tokeniser = new Tokeniser(command);
+        this.parser.setTokeniser(tokeniser);
+        this.parser.getTokeniser().preprocessQuery();
+        try {
+            Command sqlCommand = this.parser.parseCommand();
+            sqlCommand.executeCommand();
+        } catch (DatabaseException| IOException error) {
+            error.printStackTrace();
+            return "[ERROR] " + error.getMessage();
+
+        }
+        return "[OK]";
+
     }
 
     //  === Methods below handle networking aspects of the project - you will not need to change these ! ===
