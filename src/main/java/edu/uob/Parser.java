@@ -649,6 +649,7 @@ public class Parser {
 
     public void parseDelete () throws DatabaseException {
         int currentTokenIndex = 1;
+        this.command.setWorkingDatabase(this.database);
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
         if(this.database.getDatabaseName().isEmpty()){
             throw new DatabaseException("No database selected for deleting");
@@ -663,6 +664,8 @@ public class Parser {
         if(this.database.getDBTable(tokeniser.getTokenByIndex(currentTokenIndex+1)) == null){
             throw new DatabaseException("Invalid Delete Syntax - [TableName] does not exist in the database");
         }
+        //Set deletTable name to command
+        this.command.setDeleteTableName(tokeniser.getTokenByIndex(currentTokenIndex+1).toLowerCase());
         if(tokeniser.getTokenByIndex(currentTokenIndex+2).equalsIgnoreCase("WHERE")){
             parseWhere(tokeniser.getAllTokens(), currentTokenIndex+2);
         }

@@ -32,10 +32,11 @@ public class SelectCommand extends Command{
         if (!conditionList.isEmpty()) {
             if (conditionList.size() == 1) {
                 for (Condition condition : conditionList) {
+                    //Check if the attribute stored in condtion exists in the table
+                    checkIfAttributeExists(condition, displayTable);
                     for (Map<String, String> entry : displayTable.getAllEntries()) {
                         String valueToCompare = entry.get(condition.getAttributeName());
                         if (!condition.compareData(valueToCompare)) {
-                            System.out.println("Deleting entry");
                             displayTable.deleteEntry(entry.get("id"));
                         }
                     }
@@ -50,6 +51,7 @@ public class SelectCommand extends Command{
                     if (getBoolOperators().get(0).equals("AND")) {
                         delete = false;
                         for (Condition condition : conditionList) {
+                            checkIfAttributeExists(condition, displayTable);
                             String valueToCompare = entry.get(condition.getAttributeName());
                             if (!condition.compareData(valueToCompare)) {
                                 delete = true;
@@ -59,6 +61,7 @@ public class SelectCommand extends Command{
                     } else if (getBoolOperators().get(0).equals("OR")) {
                         delete = true;
                         for (Condition condition : conditionList) {
+                            checkIfAttributeExists(condition, displayTable);
                             String valueToCompare = entry.get(condition.getAttributeName());
                             if (condition.compareData(valueToCompare)) {
                                 delete = false;

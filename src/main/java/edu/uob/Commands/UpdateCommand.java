@@ -32,6 +32,7 @@ public class UpdateCommand extends Command{
                 if (conditionList.size() == 1) {
                     // Handling single condition, similar to your deletion logic
                     for (Condition condition : conditionList) {
+                        checkIfAttributeExists(condition, workingDatabase.getDBTable(updateTableName));
                         for (Map<String, String> entry : allEntries) {
                             String valueToCompare = entry.get(condition.getAttributeName());
                             if (condition.compareData(valueToCompare)) {
@@ -45,6 +46,7 @@ public class UpdateCommand extends Command{
                         boolean matchesConditions = !logicalOperator.equals("OR");
 
                         for (Condition condition : conditionList) {
+                            checkIfAttributeExists(condition, workingDatabase.getDBTable(updateTableName));
                             String valueToCompare = entry.get(condition.getAttributeName());
                             boolean conditionMatch = condition.compareData(valueToCompare);
 

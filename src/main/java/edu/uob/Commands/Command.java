@@ -37,6 +37,8 @@ public class Command {
 
     protected String updateTableName;
 
+    protected String deleteTableName;
+
     protected String insertTableName;
 
     protected String alteration;
@@ -82,7 +84,9 @@ public class Command {
         this.valueSetterList.add(valueSetter);
     }
 
-    public List<Condition> getConditionList (){ return this.conditionList; }
+    public void setDeleteTableName (String deleteTableName){
+        this.deleteTableName = deleteTableName;
+    }
 
     public void setAttributeToAlter(String attributeToAlter){
         this.attributeToAlter = attributeToAlter;
@@ -225,5 +229,12 @@ public class Command {
                 }
         }
         return displayInfo.toString();
+    }
+
+    public void checkIfAttributeExists (Condition condition, DBTable table) throws DatabaseException {
+        if (!table.getAttributes().contains(condition.getAttributeName())){
+            throw new DatabaseException("Condition error: Attribute does not exist in table");
+        }
+
     }
 }
