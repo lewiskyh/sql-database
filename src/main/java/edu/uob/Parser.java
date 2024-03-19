@@ -437,7 +437,6 @@ public class Parser {
             throw new DatabaseException("Invalid Select Syntax - [TableName] expected after FROM");
         }
         this.command.setWorkingStructure("TABLE");
-        this.command.setDatabaseName(this.database.getDatabaseName());
         this.command.setWorkingDatabase(this.database);
         this.command.setSelectTable(this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()));
 
@@ -504,7 +503,7 @@ public class Parser {
                 throw new DatabaseException("Invalid WHERE Syntax - [AttributeName] expected after WHERE");
             }
             Condition condition = new Condition();
-            condition.setAttributeName(tokeniser.getTokenByIndex(indexAtWhere+1));
+            condition.setAttributeName(tokeniser.getTokenByIndex(indexAtWhere+1).toLowerCase());
             if(!tokeniser.getTokenByIndex(indexAtWhere+2).toUpperCase().matches("(==|>=|<=|!=|LIKE|<|>|)")){
                 throw new DatabaseException("Invalid WHERE Syntax - Comparator expected after [AttributeName]");
             }

@@ -1,5 +1,6 @@
 package edu.uob.Commands;
 
+import edu.uob.Condition;
 import edu.uob.DBTable;
 import edu.uob.DatabaseException;
 
@@ -22,24 +23,23 @@ public class SelectCommand extends Command{
         }
         //Copy selectTable to displayTable using copy constructor
         displayTable = new DBTable(selectTable);
-            /**
-            if (wildCard) {
-                displayTable.printTable();
-            }
-            //Print based on attributeNameList stored in command (saved when parsing)
-            else {
-                for (String attribute : attributeNameList) {
-                    System.out.print(attribute + "\t");
-                }
-                System.out.println();
+
+        //If no condition, then display all rows (execute in server class)
+
+        //If there are conditions (attribute value check), check and remove wanted rows in displayTable
+        if (!conditionList.isEmpty()) {
+            System.out.println("Conditions exist");
+            for (Condition condition : conditionList){
                 for (Map<String, String> entry : displayTable.getAllEntries()) {
-                    for (String attribute : attributeNameList) {
-                        String row = entry.getOrDefault(attribute, "");
-                        System.out.print(row + "\t");
+                    String valueToCompare = entry.get(condition.getAttributeName());
+                    if (!condition.compareData(valueToCompare)) {
+                        System.out.println("Deleting entry");
+                        displayTable.deleteEntry(entry.get("id"));
                     }
-                    System.out.println();
                 }
-            }*/
+
+            }
+        }
     }
 
 

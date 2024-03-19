@@ -175,8 +175,7 @@ public class Command {
         StringBuilder displayInfo = new StringBuilder();
         //Start in newline
         displayInfo.append("\n");
-        if(getConditionList().isEmpty()){
-            if(getWildCard()){
+        if(getWildCard()){
                 for(String attribute : getDisplayTable().getAttributes()){
                     displayInfo.append(attribute).append("\t");
                 }
@@ -188,8 +187,8 @@ public class Command {
                     }
                     displayInfo.append("\n");
                 }
-            }
-            else{
+        }
+        else{
                 for (String attribute : getAttributeNameList()) {
                     displayInfo.append(attribute).append("\t");
                 }
@@ -201,7 +200,6 @@ public class Command {
                     }
                     displayInfo.append("\n");
                 }
-            }
         }
         return displayInfo.toString();
     }
