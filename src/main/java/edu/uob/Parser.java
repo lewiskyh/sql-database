@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 public class Parser {
 
-    private boolean wildCard = false;
 
     private Tokeniser tokeniser;
 
@@ -50,9 +49,6 @@ public class Parser {
         return this.database;
     }
 
-    public ArrayList<Condition> getAllConditions () {
-        return this.conditions;
-    }
 
     public ArrayList<String> getAllBoolOperators () {
         return this.boolOpearator;
@@ -316,6 +312,10 @@ public class Parser {
         if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected"); }
         this.command.setWorkingDatabase(this.database);
         String alterTableName = tokeniser.getTokenByIndex(currentTokenIndex+1).toLowerCase();
+        //Check if alterTable exists in the database
+        if(this.database.getDBTable(alterTableName) == null){
+            throw new DatabaseException("Invalid Alter Syntax - [TableName] does not exist in the database");
+        }
         //Set alterTable to command
         this.command.setAlterTable(this.database.getDBTable(alterTableName));
         switch (tokeniser.getTokenByIndex(currentTokenIndex+2).toUpperCase()){
@@ -432,16 +432,14 @@ public class Parser {
                 break;
             }
         }
-        if(indexAtFrom == 0){
-            throw new DatabaseException("Invalid Select Syntax - FROM expected");
-        }
+        if(indexAtFrom == 0){ throw new DatabaseException("Invalid Select Syntax - FROM expected"); }
         if(!checkName(tokeniser.getTokenByIndex(indexAtFrom+1))){
             throw new DatabaseException("Invalid Select Syntax - [TableName] expected after FROM");
         }
         this.command.setWorkingStructure("TABLE");
         this.command.setDatabaseName(this.database.getDatabaseName());
         this.command.setWorkingDatabase(this.database);
-        this.command.addTableName(tokeniser.getTokenByIndex(indexAtFrom+1));
+        this.command.setSelectTable(this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()));
 
         if(tokeniser.getTokenSize()<indexAtFrom+2){
             throw new DatabaseException("Invalid Select Syntax - [TABLENAME]; OR [TABLENAME] WHERE <Condition>; expected");
@@ -464,35 +462,37 @@ public class Parser {
             this.command.setWildCard(true);
             return;
         }
-        if(!checkName(token)){
-            throw new DatabaseException("Invalid WildAttributeList Syntax - * or [AttributeName] expected");
-        }
+        ArrayList<String> attributeListTokens = new ArrayList<>();
+
+        if(!checkName(token)){ throw new DatabaseException("Invalid WildAttributeList Syntax - * or [AttributeName] expected");}
+        this.command.setWildCard(false);
+
         //Check if next token is "," or "FROM"
         if(tokeniser.getTokenByIndex(currentTokenIndex+1).equals(",")){
-            //Add elements to ArrayList until From
-            ArrayList<String> attributeListTokens = new ArrayList<>();
+            //Add elements to ArrayList until "FROM"
             for (int i = currentTokenIndex; i < tokeniser.getTokenSize(); i++){
-                if(tokeniser.getTokenByIndex(i).toUpperCase().equals("FROM")){ break; }
-                attributeListTokens.add(tokeniser.getTokenByIndex(i));
+                if(tokeniser.getTokenByIndex(i).equalsIgnoreCase("FROM")){ break; }
+                attributeListTokens.add(tokeniser.getTokenByIndex(i).toLowerCase());
             }
             //Parse the attribute list
             parseAttributeList(attributeListTokens);
-            //Need to interpret the attribute list - maybe interpret in the parseAttribute method?
+            //Add the parsed attributes to command's attribute list
+            this.command.addAttributeList(attributeListTokens);
             return;
         }
         //If next token is FROM, only one attribute
-        else if(tokeniser.getTokenByIndex(currentTokenIndex+1).equals("FROM")){
+        else if(tokeniser.getTokenByIndex(currentTokenIndex+1).equalsIgnoreCase("FROM")){
             //need to interpret adding attribute to command.
+            parseAttributeList(attributeListTokens);
+            String singleAttribute = tokeniser.getTokenByIndex(currentTokenIndex).toLowerCase();
+            //Add the parsed attributes to command's attribute list
+            this.command.addAttribute(singleAttribute);
             return;
         }
         else{
             throw new DatabaseException("Invalid WildAttributeList Syntax - , or FROM expected after attribute name");
         }
     }
-
-
-
-
 
 
 
@@ -503,7 +503,6 @@ public class Parser {
             if(!checkName(tokeniser.getTokenByIndex(indexAtWhere+1))){
                 throw new DatabaseException("Invalid WHERE Syntax - [AttributeName] expected after WHERE");
             }
-            this.conditions = new ArrayList<>();
             Condition condition = new Condition();
             condition.setAttributeName(tokeniser.getTokenByIndex(indexAtWhere+1));
             if(!tokeniser.getTokenByIndex(indexAtWhere+2).toUpperCase().matches("(==|>=|<=|!=|LIKE|<|>|)")){
@@ -516,7 +515,7 @@ public class Parser {
                 throw new DatabaseException("Invalid WHERE Syntax - ; expected after VALUE");
             }
             condition.setBaseValue(tokeniser.getTokenByIndex(indexAtWhere+3));
-            this.conditions.add(condition);
+            this.command.addCondition(condition);
         }
         //More than one conditions
         else{

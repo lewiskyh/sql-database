@@ -43,18 +43,21 @@ public class DBServer {
     *
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
-    public String handleCommand(String command) {
+    public String handleCommand(String command){
         // TODO implement your server logic here
+        Command sqlCommand;
+        try {
         Tokeniser tokeniser = new Tokeniser(command);
         this.parser.setTokeniser(tokeniser);
         this.parser.getTokeniser().preprocessQuery();
-        try {
-            Command sqlCommand = this.parser.parseCommand();
-            sqlCommand.executeCommand();
-        } catch (DatabaseException| IOException error) {
+        sqlCommand = this.parser.parseCommand();
+        sqlCommand.executeCommand();
+        } catch (IOException | DatabaseException error) {
             error.printStackTrace();
             return "[ERROR] " + error.getMessage();
-
+        }
+        if(sqlCommand.getDisplayTable() != null){
+            return "[OK] " + sqlCommand.displayTableToString();
         }
         return "[OK]";
 

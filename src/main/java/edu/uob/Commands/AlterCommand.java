@@ -15,18 +15,18 @@ public class AlterCommand extends Command{
             throw new DatabaseException("id attribute cannot be altered");
         }
         if(alteration.equals("ADD")){
-            if( AlterTable.getAttributes().contains(attributeToAlter) ){
+            if(alterTable.getAttributes().contains(attributeToAlter.toLowerCase()) ){
                 throw new DatabaseException("Attribute already exists");
             }
-            AlterTable.addAttribute(attributeToAlter);
-            AlterTable.writeTable();
+            alterTable.addAttribute(attributeToAlter);
+            alterTable.writeTable();
         }
         else if(alteration.equals("DROP")){
-            if( !AlterTable.getAttributes().contains(attributeToAlter) ){
+            if( !alterTable.getAttributes().contains(attributeToAlter.toLowerCase()) ){
                 throw new DatabaseException("Attribute does not exist");
             }
-            AlterTable.deleteAttribute(attributeToAlter);
-            AlterTable.writeTable();
+            alterTable.deleteAttribute(attributeToAlter);
+            alterTable.writeTable();
         }
     }
 

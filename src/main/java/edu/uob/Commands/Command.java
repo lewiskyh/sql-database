@@ -1,5 +1,6 @@
 package edu.uob.Commands;
 
+import edu.uob.Condition;
 import edu.uob.DBTable;
 import edu.uob.Database;
 import edu.uob.DatabaseException;
@@ -26,7 +27,11 @@ public class Command {
 
     protected DBTable dropTable;
 
-    protected DBTable AlterTable;
+    protected DBTable alterTable;
+
+    protected DBTable selectTable;
+
+    protected DBTable displayTable;
 
     protected String insertTableName;
 
@@ -40,6 +45,8 @@ public class Command {
 
     protected List<String> tableNameList = new ArrayList<>();
 
+    protected List<Condition> conditionList = new ArrayList<>();
+
     public Command(){
         this.rootFolderPath = Paths.get("databases").toString();
     }
@@ -48,12 +55,20 @@ public class Command {
         return databaseName;
     }
 
+    public void addCondition(Condition condition){
+        this.conditionList.add(condition);
+    }
+
+    public List<Condition> getConditionList (){ return this.conditionList; }
+
     public void setAttributeToAlter(String attributeToAlter){
         this.attributeToAlter = attributeToAlter;
     }
 
+    public void setSelectTable(DBTable selectTable){ this.selectTable = selectTable; }
+
     public void setAlterTable(DBTable alterTable){
-        this.AlterTable = alterTable;
+        this.alterTable = alterTable;
     }
 
     public void setAlteration(String alteration){
@@ -72,10 +87,22 @@ public class Command {
         this.dropTable = dropTable;
     }
 
+    public boolean getWildCard(){
+        return this.wildCard;
+    }
+
+    public List<String> getAttributeNameList() {
+        return attributeNameList;
+    }
+
     public void setValueListStored(List<String> valueListStored){
         //Access the max ID of the working table and pass it to the first element of the value list
         valueListStored.add(0, Integer.toString(this.workingDatabase.getDBTable(this.insertTableName).getMaxID()));
         this.valueListStored = valueListStored;
+    }
+
+    public DBTable getDisplayTable(){
+        return this.displayTable;
     }
 
     public DBTable getInsertTable (){
@@ -126,6 +153,10 @@ public class Command {
         }
     }
 
+    public void addAttribute(String attributeName){
+        this.attributeNameList.add(attributeName);
+    }
+
     public void addTableName(String tableName){ this.tableNameList.add(tableName); }
 
     public List<String> getTableNameList(){ return this.tableNameList; }
@@ -138,5 +169,40 @@ public class Command {
 
     public void executeCommand() throws DatabaseException, IOException {
         //To be overridden by sub-classes
+    }
+
+    public String displayTableToString(){
+        StringBuilder displayInfo = new StringBuilder();
+        //Start in newline
+        displayInfo.append("\n");
+        if(getConditionList().isEmpty()){
+            if(getWildCard()){
+                for(String attribute : getDisplayTable().getAttributes()){
+                    displayInfo.append(attribute).append("\t");
+                }
+                displayInfo.append("\n");
+                for(Map<String, String> entry : getDisplayTable().getAllEntries()){
+                    for(String attribute : getDisplayTable().getAttributes()){
+                        String row = entry.getOrDefault(attribute, "");
+                        displayInfo.append(row).append("\t");
+                    }
+                    displayInfo.append("\n");
+                }
+            }
+            else{
+                for (String attribute : getAttributeNameList()) {
+                    displayInfo.append(attribute).append("\t");
+                }
+                displayInfo.append("\n");
+                for (Map<String, String> entry : getDisplayTable().getAllEntries()) {
+                    for (String attribute : getAttributeNameList()) {
+                        String row = entry.getOrDefault(attribute, "");
+                        displayInfo.append(row).append("\t");
+                    }
+                    displayInfo.append("\n");
+                }
+            }
+        }
+        return displayInfo.toString();
     }
 }

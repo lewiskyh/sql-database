@@ -39,6 +39,15 @@ public class DBTable {
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
         this.attributes.add("id");
     }
+    //Copy constructor
+    public DBTable(DBTable displayTable){
+        this.tableName = displayTable.tableName;
+        this.attributes = new ArrayList<>(displayTable.attributes);
+        this.entries = new ArrayList<>(displayTable.entries);
+        this.maxID = displayTable.maxID;
+        this.databaseFolderPath = displayTable.databaseFolderPath;
+        this.tableFilePath = displayTable.tableFilePath;
+    }
 
     public Integer getNumberOfEntries() { return this.entries.size();}
 
@@ -94,6 +103,8 @@ public class DBTable {
             }
         }
     }
+
+
 
 
     public void readFromTable() throws IOException {
