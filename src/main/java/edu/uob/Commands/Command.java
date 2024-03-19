@@ -21,6 +21,8 @@ public class Command {
     protected String databaseFolderPath;
     protected String workingStructure;
 
+    protected ArrayList<String> boolOperators = new ArrayList<>();
+
     protected List<String> valueListStored;
 
     protected DBTable createTable;
@@ -32,6 +34,8 @@ public class Command {
     protected DBTable selectTable;
 
     protected DBTable displayTable;
+
+    protected String updateTableName;
 
     protected String insertTableName;
 
@@ -47,6 +51,8 @@ public class Command {
 
     protected List<Condition> conditionList = new ArrayList<>();
 
+    protected List<ValueSetter> valueSetterList = new ArrayList<>();
+
     public Command(){
         this.rootFolderPath = Paths.get("databases").toString();
     }
@@ -57,6 +63,23 @@ public class Command {
 
     public void addCondition(Condition condition){
         this.conditionList.add(condition);
+    }
+
+    public void addBooleanOperators(String booleanOperator){
+        this.boolOperators.add(booleanOperator);
+    }
+
+    public void setUpdateTable(String updateTable){
+        this.updateTableName = updateTable;
+    }
+
+
+    public List<String> getBoolOperators(){
+        return this.boolOperators;
+    }
+
+    public void addValueSetter(ValueSetter valueSetter){
+        this.valueSetterList.add(valueSetter);
     }
 
     public List<Condition> getConditionList (){ return this.conditionList; }

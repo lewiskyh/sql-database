@@ -127,6 +127,10 @@ public class Parser {
     public void parseUse(String token) throws DatabaseException, IOException {
         //Parse the name of the database
         if(checkName(token)){
+            //Check if database exists
+            if (!Paths.get(rootFolderPath, token.toLowerCase()).toFile().exists()){
+                throw new DatabaseException("Database does not exist");
+            }
             //Set database name
             this.database = new Database(token.toLowerCase());
             this.database.setupDatabase();
@@ -436,7 +440,10 @@ public class Parser {
         if(!checkName(tokeniser.getTokenByIndex(indexAtFrom+1))){
             throw new DatabaseException("Invalid Select Syntax - [TableName] expected after FROM");
         }
-        this.command.setWorkingStructure("TABLE");
+        //Check if the table exists in the database
+        if(this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()) == null){
+            throw new DatabaseException("Invalid Select Syntax - [TableName] does not exist in the database");
+        }
         this.command.setWorkingDatabase(this.database);
         this.command.setSelectTable(this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()));
 
@@ -527,11 +534,14 @@ public class Parser {
                 if(tokens.get(i).equalsIgnoreCase("AND") || tokens.get(i).equalsIgnoreCase("OR")){
                     boolOperatorIndex.add(i);
                     this.boolOpearator.add(tokens.get(i).toUpperCase()); // Adding AND / OR to the list
+                    this.command.addBooleanOperators(tokens.get(i).toUpperCase());
                 }
             }
             //Check if every AND/OR is enclosed by ) and (
             // WHERE (...) AND (...) OR (...);
-            if(!this.boolOpearator.isEmpty()) { createTwoConditions(tokens, boolOperatorIndex); }
+            if(!this.boolOpearator.isEmpty()) {
+                parseTwoConditions(tokens, boolOperatorIndex);
+            }
             else{ throw new DatabaseException("Invalid WHERE Syntax - missing AND / OR"); }
             //Check for last ) before closing ;
             if(!tokens.get(tokens.size()-2).equals(")")){
@@ -542,7 +552,7 @@ public class Parser {
     }
 
     //Method to interpret the WHERE condition and set the fields of condition instances
-    private void createTwoConditions(ArrayList<String> tokens, ArrayList<Integer> boolOperatorIndex) throws DatabaseException{
+    private void parseTwoConditions(ArrayList<String> tokens, ArrayList<Integer> boolOperatorIndex) throws DatabaseException{
         for (Integer index : boolOperatorIndex) {
             if (!tokens.get(index - 1).equals(")") || !tokens.get(index + 1).equals("(")) {
                 throw new DatabaseException("Invalid WHERE Syntax - missing ) or (");
@@ -552,13 +562,13 @@ public class Parser {
             condition.setAttributeName(tokeniser.getTokenByIndex(index - 4));
             condition.setComparator(tokeniser.getTokenByIndex(index - 3));
             condition.setBaseValue(tokeniser.getTokenByIndex(index - 2));
-            this.conditions.add(condition);
+            this.command.addCondition(condition);
             //Create Condition instance and add to list of conditions
             condition = new Condition();
             condition.setAttributeName(tokeniser.getTokenByIndex(index + 2));
             condition.setComparator(tokeniser.getTokenByIndex(index + 3));
             condition.setBaseValue(tokeniser.getTokenByIndex(index + 4));
-            this.conditions.add(condition);
+            this.command.addCondition(condition);
         }
     }
 
@@ -566,16 +576,22 @@ public class Parser {
     public void parseUpdate() throws DatabaseException {
         int currentTokenIndex = 1;
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
-        if(this.database.getDatabaseName().isEmpty()){
+        this.command.setWorkingDatabase(this.database);
+        if(this.database == null){
             throw new DatabaseException("No database selected for updating");
         }
         if(!checkName(token)) {
             throw new DatabaseException("Invalid Update Syntax - [TableName] expected after UPDATE");
         }
+        if(this.command.getWorkingDatabase().getDBTable(token.toLowerCase()) == null){
+            throw new DatabaseException("Invalid Update Syntax - [TableName] does not exist in the database");
+        }
+        this.command.setUpdateTable(token.toLowerCase());
         if(!tokeniser.getTokenByIndex(currentTokenIndex+1).toUpperCase().equals("SET")){
             throw new DatabaseException("Invalid Update Syntax - SET expected after [TableName]");
         }
         int indexAtSet = currentTokenIndex+1;
+
         int indexAtWhere = 0;
         for (int i = 0; i < tokeniser.getTokenSize(); i++){
             if(tokeniser.getTokenByIndex(i).equalsIgnoreCase("WHERE")){
@@ -592,10 +608,17 @@ public class Parser {
         if(!checkName(token)){
             throw new DatabaseException("Invalid NameValuePair Syntax - [AttributeName] expected");
         }
+        if(token.equalsIgnoreCase("id")){
+            throw new DatabaseException("Invalid Update Syntax: id cannot be changed");
+        }
+        ValueSetter valueSetter = new ValueSetter();
+        valueSetter.setAttributeName(token.toLowerCase());
         if(!tokeniser.getTokenByIndex(nameValuePairIndex+1).equals("=")){
             throw new DatabaseException("Invalid NameValuePair Syntax - = expected after [AttributeName]");
         }
         parseValue(tokeniser.getTokenByIndex(nameValuePairIndex+2));
+        valueSetter.setValueToSet(tokeniser.getTokenByIndex(nameValuePairIndex+2));
+        this.command.addValueSetter(valueSetter);
     }
 
     public void parseNameValueList(int setIndex, int whereIndex) throws DatabaseException {

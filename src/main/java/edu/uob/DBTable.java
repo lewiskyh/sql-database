@@ -104,6 +104,15 @@ public class DBTable {
         }
     }
 
+    public void updateEntry(String primaryKey, String attributeName, String newValue){
+        for(Map<String, String> entry : entries){
+            if(entry.get("id").equals(primaryKey)){
+                entry.put(attributeName, newValue);
+                return;
+            }
+        }
+    }
+
 
 
 

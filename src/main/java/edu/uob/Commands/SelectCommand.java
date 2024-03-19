@@ -4,6 +4,8 @@ import edu.uob.Condition;
 import edu.uob.DBTable;
 import edu.uob.DatabaseException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class SelectCommand extends Command{
@@ -28,16 +30,49 @@ public class SelectCommand extends Command{
 
         //If there are conditions (attribute value check), check and remove wanted rows in displayTable
         if (!conditionList.isEmpty()) {
-            System.out.println("Conditions exist");
-            for (Condition condition : conditionList){
-                for (Map<String, String> entry : displayTable.getAllEntries()) {
-                    String valueToCompare = entry.get(condition.getAttributeName());
-                    if (!condition.compareData(valueToCompare)) {
-                        System.out.println("Deleting entry");
-                        displayTable.deleteEntry(entry.get("id"));
+            if (conditionList.size() == 1) {
+                for (Condition condition : conditionList) {
+                    for (Map<String, String> entry : displayTable.getAllEntries()) {
+                        String valueToCompare = entry.get(condition.getAttributeName());
+                        if (!condition.compareData(valueToCompare)) {
+                            System.out.println("Deleting entry");
+                            displayTable.deleteEntry(entry.get("id"));
+                        }
                     }
                 }
+            }
+            //More than one conditions to consider AND / OR?
+            else {
+                List<Map<String, String>> entryToDelete = new ArrayList<>();
 
+                for (Map<String, String> entry : displayTable.getAllEntries()) {
+                    boolean delete = false;
+                    if (getBoolOperators().get(0).equals("AND")) {
+                        delete = false;
+                        for (Condition condition : conditionList) {
+                            String valueToCompare = entry.get(condition.getAttributeName());
+                            if (!condition.compareData(valueToCompare)) {
+                                delete = true;
+                                break;
+                            }
+                        }
+                    } else if (getBoolOperators().get(0).equals("OR")) {
+                        delete = true;
+                        for (Condition condition : conditionList) {
+                            String valueToCompare = entry.get(condition.getAttributeName());
+                            if (condition.compareData(valueToCompare)) {
+                                delete = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (delete) {
+                        entryToDelete.add(entry);
+                    }
+                }
+                for (Map<String, String> entry : entryToDelete) {
+                    displayTable.deleteEntry(entry.get("id"));
+                }
             }
         }
     }

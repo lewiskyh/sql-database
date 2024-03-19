@@ -19,8 +19,6 @@ public class InsertCommand extends Command{
             for(String attributeName : attributesFromTable){
                 attributeNameList.add(attributeName);
             }
-            System.out.println(attributeNameList);
-            System.out.println(valueListStored);
             //ID is auto-filled by system
             if(valueListStored.size() != attributeNameList.size()){
                 throw new DatabaseException("Number of attributes and values mismatch");
