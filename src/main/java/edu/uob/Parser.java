@@ -197,13 +197,11 @@ public class Parser {
         if(checkName(token)){
             //Check if the next token is ";" - no attribute list
             if(this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
-                if (!this.database.getDatabaseName().isEmpty()) {
-                    this.command.setWorkingDatabase(this.database);
-                    this.command.setWorkingStructure("TABLE");
-                    DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
-                    this.command.setCreateTable(createTable);
-                }
-                else { throw new DatabaseException("Didn't not choose database to create table"); }
+                if (this.database == null) {throw new DatabaseException("No database selected"); }
+                this.command.setWorkingDatabase(this.database);
+                this.command.setWorkingStructure("TABLE");
+                DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
+                this.command.setCreateTable(createTable);
             }
             //Check if attribute list is present
             else if (this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals("(") && this.tokeniser.getTokenByIndex(tokeniser.getTokenSize()-2).equals(")")){
@@ -213,15 +211,12 @@ public class Parser {
                     attributeListTokens.add(tokeniser.getTokenByIndex(i));
                 }
                 parseAttributeList(attributeListTokens);
-                if(!this.database.getDatabaseName().isEmpty()){
-                    this.command.setWorkingDatabase(this.database);
-                    this.command.setWorkingStructure("TABLE");
-                    DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
-                    this.command.setCreateTable(createTable);
-                    this.command.addAttributeList(attributeListTokens);
-                }
-                else { throw new DatabaseException("No database selected"); }
-
+                if(this.database == null){ throw new DatabaseException("No database selected"); }
+                this.command.setWorkingDatabase(this.database);
+                this.command.setWorkingStructure("TABLE");
+                DBTable createTable = new DBTable(this.database.getDatabaseFolderPath(), token.toLowerCase());
+                this.command.setCreateTable(createTable);
+                this.command.addAttributeList(attributeListTokens);
             }
             else { throw new DatabaseException("Invalid CreateTable Syntax"); }
         }

@@ -3,6 +3,7 @@ package edu.uob.Commands;
 import edu.uob.DatabaseException;
 
 import java.io.IOException;
+import java.util.List;
 
 public class AlterCommand extends Command{
 
@@ -14,17 +15,24 @@ public class AlterCommand extends Command{
         if(attributeToAlter.equals("id")){
             throw new DatabaseException("id attribute cannot be altered");
         }
+        List<String> attributes = alterTable.getAttributes();
+        Boolean attributeExists = false;
         if(alteration.equals("ADD")){
-            if(alterTable.getAttributes().contains(attributeToAlter.toLowerCase()) ){
-                throw new DatabaseException("Attribute already exists");
+            for (String attribute : attributes) {
+                if(attribute.equalsIgnoreCase(attributeToAlter.toLowerCase())){
+                    throw new DatabaseException("Attribute already exists");
+                }
             }
             alterTable.addAttribute(attributeToAlter);
             alterTable.writeTable();
         }
         else if(alteration.equals("DROP")){
-            if( !alterTable.getAttributes().contains(attributeToAlter.toLowerCase()) ){
-                throw new DatabaseException("Attribute does not exist");
+            for (String attribute : attributes) {
+                if(attribute.equalsIgnoreCase(attributeToAlter.toLowerCase())){
+                    attributeExists = true;
+                }
             }
+            if (!attributeExists) { throw new DatabaseException("Attribute does not exist"); }
             alterTable.deleteAttribute(attributeToAlter);
             alterTable.writeTable();
         }

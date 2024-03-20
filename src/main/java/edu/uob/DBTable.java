@@ -65,9 +65,17 @@ public class DBTable {
     public void addAttribute(String attributeName) { this.attributes.add(attributeName); }
 
     public void deleteAttribute (String attributeName) {
-        this.attributes.remove(attributeName);
+        List<String> attributesIgnoreCase = this.getAttributes();
+        String targetAttribute = "";
+        for (String attribute : attributesIgnoreCase) {
+            if(attribute.equalsIgnoreCase(attributeName.toLowerCase())){
+                targetAttribute = attribute;
+                this.attributes.remove(attribute);
+                break;
+            }
+        }
         for(Map<String, String> entry : entries){
-            entry.remove(attributeName);
+            entry.remove(targetAttribute);
         }
     }
     public List<String> getAttributes() { return this.attributes; }
