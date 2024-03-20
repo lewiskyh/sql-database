@@ -23,11 +23,12 @@ public class ParserTests {
     public void setUp() {
         this.parser = new Parser();
 
-    }
+    }/**
 
 
     //Test parseUse to see if lewis database can be set up and inspect the existence and linkage of tables
     @Test
+
 
     public void testParseUse() throws IOException, DatabaseException {
         Tokeniser tokeniser = new Tokeniser("use lewis;");

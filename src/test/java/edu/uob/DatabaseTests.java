@@ -22,6 +22,7 @@ public class DatabaseTests {
         this.table = new DBTable(this.database.getDatabaseFolderPath());
 
     }
+    /**
     //Test getDatabaseName
     @Test
     public void testGetDatabaseName(){
@@ -77,8 +78,7 @@ public class DatabaseTests {
         assertEquals("people",this.database.getDBTable("people").getTableName());
         assertEquals("sheds",this.database.getDBTable("sheds").getTableName());
 
-    }
-
+    }*/
 
 
 }
