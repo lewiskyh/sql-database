@@ -59,10 +59,6 @@ public class Command {
         this.rootFolderPath = Paths.get("databases").toString();
     }
 
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
     public void addCondition(Condition condition){
         this.conditionList.add(condition);
     }
@@ -132,9 +128,7 @@ public class Command {
         return this.displayTable;
     }
 
-    public DBTable getInsertTable (){
-        return this.workingDatabase.getDBTable(this.insertTableName);
-    }
+
     //Combine entry list with attribute list to create a map
     public Map<String, String> makeInsertValueMap(){
         Map<String, String> insertValues = new HashMap<>();
@@ -187,11 +181,6 @@ public class Command {
         this.attributeNameList.add(attributeName);
     }
 
-    public void addTableName(String tableName){ this.tableNameList.add(tableName); }
-
-    public List<String> getTableNameList(){ return this.tableNameList; }
-
-    public List<String> getAttributeList(){ return this.attributeNameList; }
 
     public void setWildCard(boolean wildCard){
         this.wildCard = wildCard;

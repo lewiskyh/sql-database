@@ -18,8 +18,6 @@ public class Parser {
 
     private final String rootFolderPath = Paths.get("databases").toString();
 
-    private DBTable table;
-
     private Command command;
 
     private String[] sqlKeyWords = {"USE", "CREATE", "DROP", "ALTER", "INSERT", "SELECT", "UPDATE", "DELETE", "JOIN", "AND", "OR", "LIKE", "SET", "FROM", "WHERE", "INTO", "VALUES", "TABLE", "DATABASE"};
@@ -49,10 +47,6 @@ public class Parser {
         return this.database;
     }
 
-
-    public ArrayList<String> getAllBoolOperators () {
-        return this.boolOpearator;
-    }
 
     //First parsing for every command
     //Ending with ; or command is empty?
@@ -113,7 +107,9 @@ public class Parser {
                 break;
             }
             case "JOIN":{
-                //parseJoin();
+                this.command = new JoinCommand();
+                parseJoin();
+                break;
             }
             default: throw new DatabaseException("Invalid Command Type");
         }
@@ -676,6 +672,56 @@ public class Parser {
         if(tokeniser.getTokenByIndex(currentTokenIndex+2).equalsIgnoreCase("WHERE")){
             parseWhere(tokeniser.getAllTokens(), currentTokenIndex+2);
         }
+    }
+
+    public void parseJoin() throws DatabaseException {
+        int currentTokenIndex = 1;
+        if (tokeniser.getTokenSize() != 9) {
+            throw new DatabaseException("Invalid Join Syntax - 9 tokens expected");
+        }
+        String firstTable = tokeniser.getTokenByIndex(currentTokenIndex).toLowerCase();
+        String secondTable = tokeniser.getTokenByIndex(currentTokenIndex + 2).toLowerCase();
+        if (!checkName(firstTable) || !checkName(secondTable)) {
+            throw new DatabaseException("Invalid Join Syntax - [TableName] expected after JOIN");
+        }
+        if (this.database == null) {
+            throw new DatabaseException("No database selected");
+        }
+
+        String andToklen = tokeniser.getTokenByIndex(currentTokenIndex + 1);
+        if (!andToklen.equalsIgnoreCase("AND")) {
+            throw new DatabaseException("Invalid Join Syntax - AND expected after 1st [TableName]s");
+        }
+
+        if (this.database.getDBTable(firstTable) == null || this.database.getDBTable(secondTable) == null) {
+            throw new DatabaseException("Invalid Join Syntax - [TableName] does not exist in the database");
+        }
+        String onToken = tokeniser.getTokenByIndex(currentTokenIndex + 3);
+        if (!onToken.equalsIgnoreCase("ON")) {
+            throw new DatabaseException("Invalid Join Syntax - ON expected after 2nd [TableName]");
+        }
+        //For each attribute name, check if it exists in table1 and table2
+        String firstAttribute = tokeniser.getTokenByIndex(currentTokenIndex + 4).toLowerCase();
+        String secondAttribute = tokeniser.getTokenByIndex(currentTokenIndex + 6).toLowerCase();
+
+        List<String> firstTableAttributes = this.database.getDBTable(firstTable).getAttributes();
+        List<String> secondTableAttributes = this.database.getDBTable(secondTable).getAttributes();
+
+        checkJoinAttributeExist(firstTableAttributes, firstAttribute);
+        checkJoinAttributeExist(firstTableAttributes, secondAttribute);
+        checkJoinAttributeExist(secondTableAttributes, firstAttribute);
+        checkJoinAttributeExist(secondTableAttributes, secondAttribute);
+
+    }
+
+
+    private void checkJoinAttributeExist (List<String> attributes, String attributeName) throws DatabaseException {
+        for(String attribute : attributes){
+            if(attribute.equalsIgnoreCase(attributeName)){
+                return;
+            }
+        }
+        throw new DatabaseException("Invalid Join Syntax - [AttributeName] does not exist in [TableName]");
     }
 }
 

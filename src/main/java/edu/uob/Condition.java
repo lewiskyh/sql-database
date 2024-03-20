@@ -20,17 +20,10 @@ public class Condition {
         this.baseValue = baseValue;
     }
 
-    public String getBaseValue() {
-        return baseValue;
-    }
-
     public String getAttributeName() {
         return attributeName;
     }
 
-    public String getComparator() {
-        return comparator;
-    }
 
     public boolean isNumeber (String value) {
         if(value == null) { return false; }

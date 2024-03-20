@@ -25,9 +25,6 @@ public class Tokeniser {
         return tokens.get(index);
     }
 
-    public String getQuery () {
-        return this.query;
-    }
 
     public ArrayList<String> getAllTokens() {
         return tokens;
@@ -37,7 +34,6 @@ public class Tokeniser {
 
     public void incrementTokenIndex() { this.currentTokenIndex++; }
 
-    public void setCurrentTokenIndex(Integer index) { this.currentTokenIndex = index; }
 
     //code from Simon
     public void preprocessQuery() {
@@ -64,33 +60,4 @@ public class Tokeniser {
         return fragment.split(" ");
     }
 
-        /**
-        String query = this.query.trim();
-        // Split the query into fragments on singlespace
-        String[] fragments = query.split("\\s+");
-        for (int i = 0; i < fragments.length; i++) {
-            System.out.println(fragments[i]);
-            processFragment(fragments[i]);
-        }
-    }
-    private void processFragment(String fragment) {
-        // Check string literals and numeric literals
-        if (fragment.startsWith("'") && fragment.endsWith("'")) {
-            // Add string literals directly
-            tokens.add(fragment);
-        } else if (fragment.matches("-?\\d+(\\.\\d+)?")) {
-            tokens.add(fragment); //append numeric literals
-        } else {
-            for (String specialCharacter : specialCharacters) {
-                fragment = fragment.replace(specialCharacter, " " + specialCharacter + " ");
-                }
-            }
-        // Split into tokens taking into account special characters
-        String [] fragmentTokens = fragment.split("\\s+");
-        for (String token : fragmentTokens) {
-            if (!token.isEmpty()) {
-                tokens.add(token);
-            }
-        }
-    }*/
 }
