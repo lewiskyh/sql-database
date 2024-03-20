@@ -654,7 +654,7 @@ public class Parser {
         int currentTokenIndex = 1;
         this.command.setWorkingDatabase(this.database);
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
-        if(this.database.getDatabaseName().isEmpty()){
+        if(this.database==null){
             throw new DatabaseException("No database selected for deleting");
         }
         if(!token.equalsIgnoreCase("FROM")){
