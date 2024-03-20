@@ -33,6 +33,7 @@ public class Condition {
     }
 
     public boolean isNumeber (String value) {
+        if(value == null) { return false; }
         try {
             Double.parseDouble(value);
             return true;

@@ -436,7 +436,7 @@ public class Parser {
             throw new DatabaseException("Invalid Select Syntax - [TableName] expected after FROM");
         }
         //Check if the table exists in the database
-        if(this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()) == null){
+        if(this.database == null ||this.database.getDBTable(tokeniser.getTokenByIndex(indexAtFrom+1).toLowerCase()) == null){
             throw new DatabaseException("Invalid Select Syntax - [TableName] does not exist in the database");
         }
         this.command.setWorkingDatabase(this.database);
@@ -515,7 +515,11 @@ public class Parser {
             if(!tokeniser.getTokenByIndex(indexAtWhere+4).equals(";")){
                 throw new DatabaseException("Invalid WHERE Syntax - ; expected after VALUE");
             }
-            condition.setBaseValue(tokeniser.getTokenByIndex(indexAtWhere+3));
+            String baseValue = tokeniser.getTokenByIndex(indexAtWhere+3);
+            if(baseValue.startsWith("'") && baseValue.endsWith("'")){
+                baseValue = baseValue.substring(1, baseValue.length() - 1);
+            }
+            condition.setBaseValue(baseValue);
             this.command.addCondition(condition);
         }
         //More than one conditions
@@ -552,17 +556,25 @@ public class Parser {
             if (!tokens.get(index - 1).equals(")") || !tokens.get(index + 1).equals("(")) {
                 throw new DatabaseException("Invalid WHERE Syntax - missing ) or (");
             }
+            String baseValue = tokeniser.getTokenByIndex(index - 2);
+            if (baseValue.startsWith("'") && baseValue.endsWith("'")) {
+                baseValue = baseValue.substring(1, baseValue.length() - 1);
+            }
             //Create Condition instance and add to list of conditions
             Condition condition = new Condition();
             condition.setAttributeName(tokeniser.getTokenByIndex(index - 4));
             condition.setComparator(tokeniser.getTokenByIndex(index - 3));
-            condition.setBaseValue(tokeniser.getTokenByIndex(index - 2));
+            condition.setBaseValue(baseValue);
             this.command.addCondition(condition);
             //Create Condition instance and add to list of conditions
             condition = new Condition();
+            baseValue = tokeniser.getTokenByIndex(index + 4);
+            if (baseValue.startsWith("'") && baseValue.endsWith("'")) {
+                baseValue = baseValue.substring(1, baseValue.length() - 1);
+            }
             condition.setAttributeName(tokeniser.getTokenByIndex(index + 2));
             condition.setComparator(tokeniser.getTokenByIndex(index + 3));
-            condition.setBaseValue(tokeniser.getTokenByIndex(index + 4));
+            condition.setBaseValue(baseValue);
             this.command.addCondition(condition);
         }
     }

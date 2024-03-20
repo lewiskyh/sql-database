@@ -139,6 +139,9 @@ public class Command {
     public Map<String, String> makeInsertValueMap(){
         Map<String, String> insertValues = new HashMap<>();
         for(int i = 0; i < this.attributeNameList.size(); i++){
+            if(this.valueListStored.get(i).startsWith("'") && this.valueListStored.get(i).endsWith("'")){
+                this.valueListStored.set(i, this.valueListStored.get(i).substring(1, this.valueListStored.get(i).length() - 1));
+            }
             insertValues.put(this.attributeNameList.get(i), this.valueListStored.get(i));
         }
         return insertValues;
@@ -232,9 +235,12 @@ public class Command {
     }
 
     public void checkIfAttributeExists (Condition condition, DBTable table) throws DatabaseException {
-        if (!table.getAttributes().contains(condition.getAttributeName())){
-            throw new DatabaseException("Condition error: Attribute does not exist in table");
+        List<String> attributes = table.getAttributes();
+        for (String attribute : attributes){
+            if (attribute.equalsIgnoreCase(condition.getAttributeName().toLowerCase())){
+                return;
+            }
         }
-
+        throw new DatabaseException("Condition error: Attribute does not exist in table");
     }
 }

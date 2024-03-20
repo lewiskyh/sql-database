@@ -115,12 +115,14 @@ public class DBTable {
     public void updateEntry(String primaryKey, String attributeName, String newValue){
         for(Map<String, String> entry : entries){
             if(entry.get("id").equals(primaryKey)){
+                if(newValue.startsWith("'") && newValue.endsWith("'")){
+                    newValue = newValue.substring(1, newValue.length() - 1);
+                }
                 entry.put(attributeName, newValue);
                 return;
             }
         }
     }
-
 
 
 

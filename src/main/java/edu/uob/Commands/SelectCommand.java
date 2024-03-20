@@ -25,17 +25,27 @@ public class SelectCommand extends Command{
         }
         //Copy selectTable to displayTable using copy constructor
         displayTable = new DBTable(selectTable);
+        List<String> attributeToCheck = displayTable.getAttributes();
+        String attributeToCompare = "";
+
 
         //If no condition, then display all rows (execute in server class)
 
         //If there are conditions (attribute value check), check and remove wanted rows in displayTable
         if (!conditionList.isEmpty()) {
             if (conditionList.size() == 1) {
+                for(String attribute : attributeToCheck){
+                    if(attribute.equalsIgnoreCase(conditionList.get(0).getAttributeName())){
+                        attributeToCompare= attribute;
+                        break;
+                    }
+                }
                 for (Condition condition : conditionList) {
                     //Check if the attribute stored in condtion exists in the table
                     checkIfAttributeExists(condition, displayTable);
                     for (Map<String, String> entry : displayTable.getAllEntries()) {
-                        String valueToCompare = entry.get(condition.getAttributeName());
+                        String valueToCompare = entry.get(attributeToCompare);
+                        System.out.println(valueToCompare);
                         if (!condition.compareData(valueToCompare)) {
                             displayTable.deleteEntry(entry.get("id"));
                         }
@@ -52,7 +62,14 @@ public class SelectCommand extends Command{
                         delete = false;
                         for (Condition condition : conditionList) {
                             checkIfAttributeExists(condition, displayTable);
-                            String valueToCompare = entry.get(condition.getAttributeName());
+                            attributeToCompare = "";
+                            for(String attribute : attributeToCheck){
+                                if(attribute.equalsIgnoreCase(condition.getAttributeName())){
+                                    attributeToCompare= attribute;
+                                    break;
+                                }
+                            }
+                            String valueToCompare = entry.get(attributeToCompare);
                             if (!condition.compareData(valueToCompare)) {
                                 delete = true;
                                 break;
@@ -62,7 +79,14 @@ public class SelectCommand extends Command{
                         delete = true;
                         for (Condition condition : conditionList) {
                             checkIfAttributeExists(condition, displayTable);
-                            String valueToCompare = entry.get(condition.getAttributeName());
+                            attributeToCompare = "";
+                            for(String attribute : attributeToCheck){
+                                if(attribute.equalsIgnoreCase(condition.getAttributeName())){
+                                    attributeToCompare= attribute;
+                                    break;
+                                }
+                            }
+                            String valueToCompare = entry.get(attributeToCompare);
                             if (condition.compareData(valueToCompare)) {
                                 delete = false;
                                 break;
