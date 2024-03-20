@@ -11,7 +11,7 @@ public class DBTable {
 
     private List<String> attributes;
 
-    private List<Map<String,String>> entries;
+    private List<Map<String,String>> rows;
 
     private Integer maxID; // Only change when new entry added
 
@@ -22,7 +22,7 @@ public class DBTable {
     public DBTable(String databaseFolderPath){
         this.tableName = "";
         this.attributes = new ArrayList<>();
-        this.entries = new ArrayList<>();
+        this.rows = new ArrayList<>();
         this.maxID = 0;
         this.databaseFolderPath = databaseFolderPath;
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
@@ -34,7 +34,7 @@ public class DBTable {
         this.tableName = tableName;
         this.maxID = 0;
         this.attributes = new ArrayList<>();
-        this.entries = new ArrayList<>();
+        this.rows = new ArrayList<>();
         this.databaseFolderPath = databaseFolderPath;
         this.tableFilePath = databaseFolderPath + File.separator + this.tableName + ".tab";
         this.attributes.add("id");
@@ -43,13 +43,13 @@ public class DBTable {
     public DBTable(DBTable displayTable){
         this.tableName = displayTable.tableName;
         this.attributes = new ArrayList<>(displayTable.attributes);
-        this.entries = new ArrayList<>(displayTable.entries);
+        this.rows = new ArrayList<>(displayTable.rows);
         this.maxID = displayTable.maxID;
         this.databaseFolderPath = displayTable.databaseFolderPath;
         this.tableFilePath = displayTable.tableFilePath;
     }
 
-    public Integer getNumberOfEntries() { return this.entries.size();}
+    public Integer getNumberOfEntries() { return this.rows.size();}
 
     public Integer getNumberOfAttributes() { return this.attributes.size(); }
 
@@ -74,18 +74,18 @@ public class DBTable {
                 break;
             }
         }
-        for(Map<String, String> entry : entries){
-            entry.remove(targetAttribute);
+        for(Map<String, String> row : rows){
+            row.remove(targetAttribute);
         }
     }
     public List<String> getAttributes() { return this.attributes; }
 
     public List <String> getEntryByKey (String primaryKey){
-        for(Map<String, String> entry : entries){
-            if(entry.get("id").equals(primaryKey)){
+        for(Map<String, String> row : rows){
+            if(row.get("id").equals(primaryKey)){
                 List<String> result = new ArrayList<>();
                 for(String attribute : this.attributes){
-                    result.add(entry.get(attribute));
+                    result.add(row.get(attribute));
                 }
                 return result;
             }
@@ -95,30 +95,30 @@ public class DBTable {
 
     public String getTableFilePath() { return this.tableFilePath; }
 
-    public List<Map<String, String>> getAllEntries() { return new ArrayList<>(this.entries); }
+    public List<Map<String, String>> getAllEntries() { return new ArrayList<>(this.rows); }
 
     public void addEntry(Map<String, String> entry) {
-        this.entries.add(new HashMap<>(entry));
+        this.rows.add(new HashMap<>(entry));
         this.maxID++;
     }
 
 
     public void deleteEntry (String primaryKey){
-        for(Map<String, String> entry : entries){
-            if(entry.get("id").equals(primaryKey)){
-                entries.remove(entry);
+        for(Map<String, String> row : rows){
+            if(row.get("id").equals(primaryKey)){
+                rows.remove(row);
                 return;
             }
         }
     }
 
     public void updateEntry(String primaryKey, String attributeName, String newValue){
-        for(Map<String, String> entry : entries){
-            if(entry.get("id").equals(primaryKey)){
+        for(Map<String, String> row : rows){
+            if(row.get("id").equals(primaryKey)){
                 if(newValue.startsWith("'") && newValue.endsWith("'")){
                     newValue = newValue.substring(1, newValue.length() - 1);
                 }
-                entry.put(attributeName, newValue);
+                row.put(attributeName, newValue);
                 return;
             }
         }
@@ -145,7 +145,7 @@ public class DBTable {
                     this.attributes.add(attribute);
                 }
             }
-            this.entries.clear();
+            this.rows.clear();
             while((line = bufferedReader.readLine()) != null && !line.trim().isEmpty()){
                 processRows(line);
             }
