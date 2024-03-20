@@ -249,9 +249,6 @@ public class Parser {
     public void parseDrop() throws DatabaseException, IOException {
         int currentTokenIndex = 1;
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
-        if(this.database.getDatabaseName().isEmpty()){
-            throw new DatabaseException("No database selected");
-        }
         switch (token.toUpperCase()){
             case "DATABASE":{
                 parseDropDatabase();
@@ -281,6 +278,7 @@ public class Parser {
 
     public void parseDropTable() throws DatabaseException {
         int currentTokenIndex = 2;
+        if(this.database == null){ throw new DatabaseException("No database selected for DROP"); }
         String token = tokeniser.getTokenByIndex(currentTokenIndex).toLowerCase();
         if(checkName(token) && this.tokeniser.getTokenByIndex(currentTokenIndex+1).equals(";")){
             if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected"); }
@@ -297,7 +295,7 @@ public class Parser {
         int currentTokenIndex = 1;
         if(tokeniser.getTokenSize()!=6){ throw new DatabaseException("Invalid Alter Syntax - at least 6 tokens expected"); }
         String token = tokeniser.getTokenByIndex(currentTokenIndex);
-        if(this.database.getDatabaseName().isEmpty()){ throw new DatabaseException("No database selected"); }
+        if(this.database == null ){ throw new DatabaseException("No database selected"); }
         if(!token.toUpperCase().equals("TABLE")){
              throw new DatabaseException("Invalid Alter Syntax - \"TABLE\"expected after ALTER");
         }
@@ -387,7 +385,7 @@ public class Parser {
             throw new DatabaseException("Invalid Insert Syntax - [TableName] expected after INTO");
         }
         String workingTableName = tokeniser.getTokenByIndex(currentTokenIndex+1).toLowerCase();
-        if(this.database.getDatabaseName()==null){ throw new DatabaseException("No database selected");}
+        if(this.database==null){ throw new DatabaseException("No database selected");}
         this.command.setWorkingStructure("TABLE");
         //Check if working table exists in the database
         if(this.database.getDBTable(workingTableName) == null){
