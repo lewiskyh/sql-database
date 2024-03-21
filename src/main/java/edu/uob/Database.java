@@ -51,9 +51,6 @@ public class Database {
         return this.mapsOfTables.get(tableName);
     }
 
-    public void addDBTable(DBTable table) {
-        this.mapsOfTables.put(table.getTableName(), table);
-    }
 
     public void deleteDBTable(String tableName) {
         this.mapsOfTables.remove(tableName);

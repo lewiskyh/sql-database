@@ -49,8 +49,6 @@ public class Command {
 
     protected List<String> attributeNameList = new ArrayList<>();
 
-    protected List<String> tableNameList = new ArrayList<>();
-
     protected List<Condition> conditionList = new ArrayList<>();
 
     protected List<ValueSetter> valueSetterList = new ArrayList<>();
@@ -151,10 +149,6 @@ public class Command {
 
     public void setWorkingStructure(String workingStructure){
         this.workingStructure = workingStructure;
-    }
-
-    public String getWorkingStructure(){
-        return this.workingStructure;
     }
 
     public void setDatabaseName(String databaseName) {

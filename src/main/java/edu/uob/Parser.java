@@ -413,7 +413,6 @@ public class Parser {
 
     public void parseSelect () throws DatabaseException {
         int currentTokenIndex = 1;
-        String token = tokeniser.getTokenByIndex(currentTokenIndex);
         if(tokeniser.getTokenSize()<5){
             throw new DatabaseException("Invalid Select Syntax - at least 5 tokens expected");
         }
