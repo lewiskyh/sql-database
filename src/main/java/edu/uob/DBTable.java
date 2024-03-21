@@ -77,19 +77,6 @@ public class DBTable {
     }
     public List<String> getAttributes() { return this.attributes; }
 
-    public List <String> getEntryByKey (String primaryKey){
-        for(Map<String, String> row : rows){
-            if(row.get("id").equals(primaryKey)){
-                List<String> result = new ArrayList<>();
-                for(String attribute : this.attributes){
-                    result.add(row.get(attribute));
-                }
-                return result;
-            }
-        }
-        return null;
-    }
-
     public String getTableFilePath() { return this.tableFilePath; }
 
     public List<Map<String, String>> getAllEntries() { return new ArrayList<>(this.rows); }
