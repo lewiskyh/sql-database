@@ -47,11 +47,35 @@ public class Command {
 
     protected boolean wildCard;
 
+    protected DBTable joinTable1;
+
+    protected DBTable joinTable2;
+
+    protected String joinAttribute1;
+
+    protected String joinAttribute2;
+
     protected List<String> attributeNameList = new ArrayList<>();
 
     protected List<Condition> conditionList = new ArrayList<>();
 
     protected List<ValueSetter> valueSetterList = new ArrayList<>();
+
+    public void setJoinTable1(DBTable joinTable1) {
+        this.joinTable1 = joinTable1;
+    }
+
+    public void setJoinTable2(DBTable joinTable2) {
+        this.joinTable2 = joinTable2;
+    }
+
+    public void setJoinAttribute1(String joinAttribute1) {
+        this.joinAttribute1 = joinAttribute1;
+    }
+
+    public void setJoinAttribute2(String joinAttribute2) {
+        this.joinAttribute2 = joinAttribute2;
+    }
 
     public Command(){
         this.rootFolderPath = Paths.get("databases").toString();
@@ -188,7 +212,21 @@ public class Command {
         StringBuilder displayInfo = new StringBuilder();
         //Start in newline
         displayInfo.append("\n");
-        if(getWildCard()){
+
+        if(joinTable1 != null && joinTable2 != null){
+            for(String attribute : getDisplayTable().getAttributes()){
+                displayInfo.append(attribute).append("\t");
+            }
+            displayInfo.append("\n");
+            for(Map<String, String> entry : getDisplayTable().getAllEntries()){
+                for(String attribute : getDisplayTable().getAttributes()){
+                    String row = entry.getOrDefault(attribute, "");
+                    displayInfo.append(row).append("\t");
+                }
+                displayInfo.append("\n");
+            }
+        }
+        else if (getWildCard()){
                 for(String attribute : getDisplayTable().getAttributes()){
                     displayInfo.append(attribute).append("\t");
                 }
@@ -216,6 +254,7 @@ public class Command {
         }
         return displayInfo.toString();
     }
+
 
     public void checkIfAttributeExists (Condition condition, DBTable table) throws DatabaseException {
         List<String> attributes = table.getAttributes();

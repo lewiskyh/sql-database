@@ -685,6 +685,11 @@ public class Parser {
             throw new DatabaseException("No database selected");
         }
 
+        this.command.setWorkingDatabase(this.database);
+        this.command.setJoinTable1(this.database.getDBTable(firstTable));
+        this.command.setJoinTable2(this.database.getDBTable(secondTable));
+
+
         String andToklen = tokeniser.getTokenByIndex(currentTokenIndex + 1);
         if (!andToklen.equalsIgnoreCase("AND")) {
             throw new DatabaseException("Invalid Join Syntax - AND expected after 1st [TableName]s");
@@ -701,6 +706,9 @@ public class Parser {
         String firstAttribute = tokeniser.getTokenByIndex(currentTokenIndex + 4).toLowerCase();
         String secondAttribute = tokeniser.getTokenByIndex(currentTokenIndex + 6).toLowerCase();
 
+        this.command.setJoinAttribute1(firstAttribute);
+        this.command.setJoinAttribute2(secondAttribute);
+
         List<String> firstTableAttributes = this.database.getDBTable(firstTable).getAttributes();
         List<String> secondTableAttributes = this.database.getDBTable(secondTable).getAttributes();
 
@@ -714,7 +722,7 @@ public class Parser {
 
     private void checkJoinAttributeExist (List<String> attributes, String attributeName) throws DatabaseException {
         for(String attribute : attributes){
-            if(attribute.equalsIgnoreCase(attributeName)){
+            if(attribute.equalsIgnoreCase(attributeName) || attribute.equals("id")){
                 return;
             }
         }

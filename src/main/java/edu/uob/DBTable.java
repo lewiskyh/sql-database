@@ -49,9 +49,6 @@ public class DBTable {
         this.tableFilePath = displayTable.tableFilePath;
     }
 
-    public Integer getNumberOfEntries() { return this.rows.size();}
-
-    public Integer getNumberOfAttributes() { return this.attributes.size(); }
 
     public Integer getMaxID() { return this.maxID; }
 
